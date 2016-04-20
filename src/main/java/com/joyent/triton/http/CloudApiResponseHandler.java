@@ -2,6 +2,7 @@ package com.joyent.triton.http;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.joyent.triton.CloudApiUtils;
 import com.joyent.triton.domain.ErrorDetail;
 import com.joyent.triton.exceptions.CloudApiAuthenticationException;
 import com.joyent.triton.exceptions.CloudApiIOException;
@@ -165,9 +166,14 @@ public class CloudApiResponseHandler<T> implements ResponseHandler<T> {
             }
 
             String msg = String.format("No response entity returned. Expecting a body of the"
-                    + " type [%s] [req_id: %s]",
-                    deserializationType.getType(), extractRequestId(response));
-            throw new CloudApiIOException(msg);
+                    + " type [%s]", deserializationType.getType());
+            CloudApiIOException exception = new CloudApiIOException(msg);
+            exception.setContextValue("requestId", extractRequestId(response));
+            exception.setContextValue("operationName", operationName);
+            exception.setContextValue("deserializationMode", deserializationMode);
+            exception.setContextValue("responseHeaders", CloudApiUtils.asString(response.getAllHeaders()));
+
+            throw exception;
         }
 
         try (InputStream in = response.getEntity().getContent()) {
@@ -235,6 +241,10 @@ public class CloudApiResponseHandler<T> implements ResponseHandler<T> {
         if (entityText != null) {
             exception.setContextValue("entityText", entityText);
         }
+
+        exception.setContextValue("operationName", operationName);
+        exception.setContextValue("deserializationMode", deserializationMode);
+        exception.setContextValue("responseHeaders", CloudApiUtils.asString(response.getAllHeaders()));
 
         return exception;
     }

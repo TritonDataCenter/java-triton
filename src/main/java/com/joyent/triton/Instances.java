@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.joyent.triton.config.ConfigContext;
 import com.joyent.triton.domain.Instance;
+import com.joyent.triton.exceptions.CloudApiException;
 import com.joyent.triton.exceptions.CloudApiIOException;
 import com.joyent.triton.exceptions.InstanceGoneMissingException;
 import com.joyent.triton.http.CloudApiConnectionContext;
@@ -191,38 +192,53 @@ public class Instances {
 
         final HttpHead head = connectionFactory.head(path, filterParams);
 
+        try {
         /* We first perform a head request because we can use it to determine if any results are going
          * to be returned. If there are no results, we can just return an empty collection and give up. */
-        final Map<String, Header> headHeaders = client.execute(head, headerInstanceHandler, context.getHttpContext());
-        final int headResourceCount = resourceCount(headHeaders);
+            final Map<String, Header> headHeaders = client.execute(
+                    head, headerInstanceHandler, context.getHttpContext());
+            final int headResourceCount = resourceCount(headHeaders);
 
-        // -1 indicates error, 1+ indicates values present
-        if (headResourceCount == 0) {
-            return Collections.emptyIterator();
+            // -1 indicates error, 1+ indicates values present
+            if (headResourceCount == 0) {
+                return Collections.emptyIterator();
+            }
+        } catch (CloudApiIOException | CloudApiException e) {
+            // Add request context
+            e.setContextValue("request", head);
+            e.setContextValue("requestHeaders", CloudApiUtils.asString(head.getAllHeaders()));
+            throw e;
         }
 
         final HttpGet get = connectionFactory.get(path, filterParams);
 
-        @SuppressWarnings("unchecked")
-        final HttpCollectionResponse<Instance> result =
-                (HttpCollectionResponse<Instance>)client.execute(
-                        get, listInstanceHandler, context.getHttpContext());
+        try {
+            @SuppressWarnings("unchecked")
+            final HttpCollectionResponse<Instance> result =
+                    (HttpCollectionResponse<Instance>) client.execute(
+                            get, listInstanceHandler, context.getHttpContext());
 
-        final HttpResponse response = result.getResponse();
+            final HttpResponse response = result.getResponse();
 
-        final String resourceCountVal = response.getFirstHeader(CloudApiHttpHeaders.X_RESOURCE_COUNT).getValue();
-        @SuppressWarnings("ConstantConditions")
-        final int resourceCount = Integer.parseInt(firstNonNull(resourceCountVal, "0"));
-        final String queryLimitVal = response.getFirstHeader(CloudApiHttpHeaders.X_QUERY_LIMIT).getValue();
-        @SuppressWarnings("ConstantConditions")
-        final int queryLimit = Integer.parseInt(firstNonNull(queryLimitVal, "1000"));
+            final String resourceCountVal = response.getFirstHeader(CloudApiHttpHeaders.X_RESOURCE_COUNT).getValue();
+            @SuppressWarnings("ConstantConditions")
+            final int resourceCount = Integer.parseInt(firstNonNull(resourceCountVal, "0"));
+            final String queryLimitVal = response.getFirstHeader(CloudApiHttpHeaders.X_QUERY_LIMIT).getValue();
+            @SuppressWarnings("ConstantConditions")
+            final int queryLimit = Integer.parseInt(firstNonNull(queryLimitVal, "1000"));
 
-        if (resourceCount < queryLimit) {
-            logger.info("Total instances: {}", result.size());
-            return result.getWrapped().iterator();
+            if (resourceCount < queryLimit) {
+                logger.info("Total instances: {}", result.size());
+                return result.getWrapped().iterator();
+            }
+
+            return result.iterator();
+        } catch (CloudApiIOException | CloudApiException e) {
+            // Add request context
+            e.setContextValue("request", get);
+            e.setContextValue("requestHeaders", CloudApiUtils.asString(get.getAllHeaders()));
+            throw e;
         }
-
-        return result.iterator();
     }
 
     /**
@@ -243,16 +259,23 @@ public class Instances {
         final String path = String.format("/%s/machines", config.getUser());
         final HttpPost post = connectionFactory.post(path);
 
-        HttpEntity entity = new JsonEntity(mapper, instance);
-        post.setEntity(entity);
+        try {
+            HttpEntity entity = new JsonEntity(mapper, instance);
+            post.setEntity(entity);
 
-        final HttpClient client = context.getHttpClient();
-        final Instance result = client.execute(post,
-                createInstanceHandler, context.getHttpContext());
+            final HttpClient client = context.getHttpClient();
+            final Instance result = client.execute(post,
+                    createInstanceHandler, context.getHttpContext());
 
-        logger.info("Created new instance: {}", result.getId());
+            logger.info("Created new instance: {}", result.getId());
 
-        return result;
+            return result;
+        } catch (CloudApiIOException | CloudApiException e) {
+            // Add request context
+            e.setContextValue("request", post);
+            e.setContextValue("requestHeaders", CloudApiUtils.asString(post.getAllHeaders()));
+            throw e;
+        }
     }
 
     /**
@@ -307,10 +330,17 @@ public class Instances {
                 config.getUser(), instanceId);
         final HttpDelete delete = connectionFactory.delete(path);
 
-        final HttpClient client = context.getHttpClient();
-        client.execute(delete, deleteInstanceHandler, context.getHttpContext());
+        try {
+            final HttpClient client = context.getHttpClient();
+            client.execute(delete, deleteInstanceHandler, context.getHttpContext());
 
-        logger.info("Deleted instance: {}", instanceId);
+            logger.info("Deleted instance: {}", instanceId);
+        } catch (CloudApiIOException | CloudApiException e) {
+            // Add request context
+            e.setContextValue("request", delete);
+            e.setContextValue("requestHeaders", CloudApiUtils.asString(delete.getAllHeaders()));
+            throw e;
+        }
     }
 
     /**
@@ -500,7 +530,15 @@ public class Instances {
         final String path = String.format("/%s/machines/%s",
                 config.getUser(), instanceId);
         final HttpGet get = connectionFactory.get(path);
-        return client.execute(get, findInstanceHandler, context.getHttpContext());
+
+        try {
+            return client.execute(get, findInstanceHandler, context.getHttpContext());
+        } catch (CloudApiIOException | CloudApiException e) {
+            // Add request context
+            e.setContextValue("request", get);
+            e.setContextValue("requestHeaders", CloudApiUtils.asString(get.getAllHeaders()));
+            throw e;
+        }
     }
 
     /**
@@ -540,18 +578,26 @@ public class Instances {
 
         final String path = String.format("/%s/machines/%s/tags", config.getUser(), instanceId);
         final HttpPost post = connectionFactory.post(path);
-        final HttpEntity entity = new JsonEntity(mapper, tags);
-        post.setEntity(entity);
 
-        final HttpClient client = context.getHttpClient();
-        final Map<String, String> result = client.execute(post,
-                tagsHandler, context.getHttpContext());
+        try {
+            final HttpEntity entity = new JsonEntity(mapper, tags);
+            post.setEntity(entity);
 
-        if (logger.isInfoEnabled()) {
-            logger.info("Add/updated [%d] tags to instance [{}]", result.size());
+            final HttpClient client = context.getHttpClient();
+            final Map<String, String> result = client.execute(post,
+                    tagsHandler, context.getHttpContext());
+
+            if (logger.isInfoEnabled()) {
+                logger.info("Add/updated [%d] tags to instance [{}]", result.size());
+            }
+
+            return result;
+        } catch (CloudApiIOException | CloudApiException e) {
+            // Add request context
+            e.setContextValue("request", post);
+            e.setContextValue("requestHeaders", CloudApiUtils.asString(post.getAllHeaders()));
+            throw e;
         }
-
-        return result;
     }
 
     /**
@@ -587,18 +633,26 @@ public class Instances {
 
         final String path = String.format("/%s/machines/%s/tags", config.getUser(), instanceId);
         final HttpPut put = connectionFactory.put(path);
-        final HttpEntity entity = new JsonEntity(mapper, tags);
-        put.setEntity(entity);
 
-        final HttpClient client = context.getHttpClient();
-        final Map<String, String> result = client.execute(put,
-                tagsHandler, context.getHttpContext());
+        try {
+            final HttpEntity entity = new JsonEntity(mapper, tags);
+            put.setEntity(entity);
 
-        if (logger.isInfoEnabled()) {
-            logger.info("Replaced all tags on instance [{}] with [%d] tags", result.size());
+            final HttpClient client = context.getHttpClient();
+            final Map<String, String> result = client.execute(put,
+                    tagsHandler, context.getHttpContext());
+
+            if (logger.isInfoEnabled()) {
+                logger.info("Replaced all tags on instance [{}] with [%d] tags", result.size());
+            }
+
+            return result;
+        } catch (CloudApiIOException | CloudApiException e) {
+            // Add request context
+            e.setContextValue("request", put);
+            e.setContextValue("requestHeaders", CloudApiUtils.asString(put.getAllHeaders()));
+            throw e;
         }
-
-        return result;
     }
 
     /**
