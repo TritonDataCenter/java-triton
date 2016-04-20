@@ -32,7 +32,7 @@ Configuration parameters take precedence from left to right - values on the
 left are overridden by values on the right.
 
 | Default                              | System Property            | Environment Variable               |
-|--------------------------------------|----------------------------|---------------------------------- -|
+|--------------------------------------|----------------------------|------------------------------------|
 | https://us-east-1.api.joyent.com:443 | triton.url                 | TRITON_URL, SDC_URL                |
 |                                      | triton.user                | TRITON_USER, SDC_USER, SDC_ACCOUNT |                |
 | $HOME/.ssh/id_rsa                    | triton.key_id              | TRITON_KEY_ID, SDC_KEY_ID          |
