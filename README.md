@@ -26,6 +26,10 @@ The intent of this project is to provide an easy to use interface to Triton via
 its REST API (CloudAPI). We intend to do this with the minimal amount of 
 dependencies and maintain compatibility with Java 7 for the time being.
 
+Ideally, the project is in a state where we can now start to add swaths of
+functionality using the patterns that have been established in the existing 
+code. 
+
 ## Configuration
 
 Configuration parameters take precedence from left to right - values on the
