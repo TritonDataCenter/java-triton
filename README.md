@@ -14,8 +14,8 @@ Add the latest java-manta dependency to your Maven `pom.xml`.
 
 ```xml
 <dependency>
-    <groupId>com.joyent</groupId>
-    <artifactId>java-triton</artifactId>
+    <groupId>com.joyent.triton</groupId>
+    <artifactId>java-triton-client</artifactId>
     <version>LATEST</version>
 </dependency>
 ```
