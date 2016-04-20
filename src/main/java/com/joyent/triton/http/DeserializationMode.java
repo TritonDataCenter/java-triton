@@ -29,7 +29,10 @@ public enum DeserializationMode {
         switch (className) {
             case "class java.lang.Void":
                 return VOID;
+            // the non-shaded class name
             case "java.util.Map<java.lang.String, org.apache.http.Header>":
+            // support the maven shaded class name as well
+            case "java.util.Map<java.lang.String, com.joyent.triton.org.apache.http.Header>":
                 return HEADER_MAP;
             default:
                 return ENTITY;
