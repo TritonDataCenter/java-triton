@@ -31,21 +31,21 @@ dependencies and maintain compatibility with Java 7 for the time being.
 Configuration parameters take precedence from left to right - values on the
 left are overridden by values on the right.
 
-| Default                              | System Property           | Environment Variable               |
-|--------------------------------------|---------------------------|---------------------------------- -|
-| https://us-east-1.api.joyent.com:443 | triton.url                | TRITON_URL, SDC_URL                |
-|                                      | triton.user               | TRITON_USER, SDC_USER, SDC_ACCOUNT |                |
-| $HOME/.ssh/id_rsa                    | triton.key_id             | TRITON_KEY_ID, SDC_KEY_ID          |
-|                                      | triton.key_path           | TRITON_KEY_PATH, SDC_KEY_PATH      |
-|                                      | triton.key_content        | TRITON_KEY_CONTENT                 |
-|                                      | triton.password           | TRITON_PASSWORD                    |
-| 20000                                | triton.timeout            | TRITON_TIMEOUT                     |
-| 3                                    | triton.retries            | TRITON_HTTP_RETRIES                |
-| 24                                   | triton.max_connections    | TRITON_MAX_CONNS                   |
-| TLSv1.2                              | https.protocols           | TRITON_HTTPS_PROTOCOLS             |
-| <value too big - see code>           | https.cipherSuites        | TRITON_HTTPS_CIPHERS               |
-| false                                | triton.no_auth            | TRITON_NO_AUTH                     |
-| false                                | triton.disable_native_sigs| TRITON_NO_NATIVE_SIGS              |
+| Default                              | System Property            | Environment Variable               |
+|--------------------------------------|----------------------------|---------------------------------- -|
+| https://us-east-1.api.joyent.com:443 | triton.url                 | TRITON_URL, SDC_URL                |
+|                                      | triton.user                | TRITON_USER, SDC_USER, SDC_ACCOUNT |                |
+| $HOME/.ssh/id_rsa                    | triton.key_id              | TRITON_KEY_ID, SDC_KEY_ID          |
+|                                      | triton.key_path            | TRITON_KEY_PATH, SDC_KEY_PATH      |
+|                                      | triton.key_content         | TRITON_KEY_CONTENT                 |
+|                                      | triton.password            | TRITON_PASSWORD                    |
+| 20000                                | triton.timeout             | TRITON_TIMEOUT                     |
+| 3                                    | triton.retries             | TRITON_HTTP_RETRIES                |
+| 24                                   | triton.max_connections     | TRITON_MAX_CONNS                   |
+| TLSv1.2                              | https.protocols            | TRITON_HTTPS_PROTOCOLS             |
+| <value too big - see code>           | https.cipherSuites         | TRITON_HTTPS_CIPHERS               |
+| false                                | triton.no_auth             | TRITON_NO_AUTH                     |
+| false                                | triton.disable_native_sigs | TRITON_NO_NATIVE_SIGS              |
 
 ### Logging
 
