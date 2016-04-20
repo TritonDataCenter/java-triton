@@ -143,7 +143,7 @@ public class CloudApiConnectionFactory {
             builder.setProxy(proxyHost);
         }
 
-        builder.addInterceptorLast(new RequestIdInterceptor());
+        builder.addInterceptorFirst(new RequestIdInterceptor());
 
         return builder;
     }
