@@ -1,0 +1,28 @@
+{
+  "id": "c872d3bf-cbaa-4165-8e18-f6e3e1d94da9",
+  "name": "jenkins-lx-test",
+  "type": "smartmachine",
+  "brand": "lx",
+  "state": "running",
+  "image": "445d04f4-cad6-11e5-a1a0-9f6c0ce02707",
+  "ips": ["167.223.138.115", "192.168.128.164"],
+  "memory": 4096,
+  "disk": 102400,
+  "metadata": {
+    "root_authorized_keys": "ssh-rsa XXXXXXXXXXXXXXXXXXXXXXXX jenkins@d3d0a768d56e\n"
+  },
+  "tags": { "name": "value" },
+  "created": "2016-02-17T01:46:15.677Z",
+  "updated": "2016-03-31T15:17:19.000Z",
+  "networks": ["feb7b2c5-0063-42f0-a4e6-b812917397f7", "898e0149-9309-4e23-b2ed-2521b70f45a6"],
+  "primaryIp": "167.223.138.115",
+  "firewall_enabled": false,
+  "compute_node": "44454c4c-4400-1054-8052-b5c04f383432",
+  "package": "t4-standard-4G",
+  "dns_names": [
+    "c872d3bf-cbaa-4165-8e18-f6e3e1d94da9.inst.bf80aadd-8616-c9c2-a074-8bdd028e7a7b.us-east-3b.triton.zone",
+    "jenkins-lx-test.inst.bf80aadd-8616-c9c2-a074-8bdd028e7a7b.us-east-3b.triton.zone",
+    "c872d3bf-cbaa-4165-8e18-f6e3e1d94da9.inst.bf80aadd-8616-c9c2-a074-8bdd028e7a7b.us-east-3b.cns.joyent.us",
+    "jenkins-lx-test.inst.bf80aadd-8616-c9c2-a074-8bdd028e7a7b.us-east-3b.cns.joyent.us"
+  ]
+}

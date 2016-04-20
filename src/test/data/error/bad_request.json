@@ -1,0 +1,4 @@
+{
+  "code": "InvalidHeader",
+  "message": "Authorization header invalid: clock skew of 2296.141s was greater than 300s"
+}

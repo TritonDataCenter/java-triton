@@ -1,0 +1,47 @@
+[{
+  "id": "fef6af0c-3b74-4a67-8c09-8ab181941f06",
+  "name": "unit-test-machine-6f134c95-c97c-4c29-9d09-eda23950897f",
+  "type": "smartmachine",
+  "brand": "joyent",
+  "state": "running",
+  "image": "e1faace4-e19b-11e5-928b-83849e2fd94a",
+  "ips": ["72.2.112.25", "10.112.6.92"],
+  "memory": 128,
+  "disk": 3072,
+  "metadata": {
+    "root_authorized_keys": "some value\n"
+  },
+  "tags": {
+    "server_type": "java-integration-test"
+  },
+  "created": "2016-04-16T01:09:09.197Z",
+  "updated": "2016-04-16T01:10:06.000Z",
+  "networks": ["2bf2a968-a4da-414b-a997-b3a8ff92de0b", "56f0fd52-4df1-49bd-af0c-81c717ea8bce"],
+  "primaryIp": "72.2.112.25",
+  "firewall_enabled": false,
+  "compute_node": "44454c4c-4400-1059-804e-b5c04f383432",
+  "package": "t4-standard-128M"
+}, {
+  "id": "796c95ea-a386-4c7d-a29e-ae159e9184e9",
+  "name": "unit-test-machine-3becaf38-0070-4118-9506-89dad7c2dddc",
+  "type": "smartmachine",
+  "brand": "joyent",
+  "state": "running",
+  "image": "e1faace4-e19b-11e5-928b-83849e2fd94a",
+  "ips": ["72.2.113.3", "10.112.5.155"],
+  "memory": 128,
+  "disk": 3072,
+  "metadata": {
+    "root_authorized_keys": "ssh-rsa somevalue\n"
+  },
+  "tags": {
+    "server_type": "java-integration-test"
+  },
+  "created": "2016-04-16T01:09:03.950Z",
+  "updated": "2016-04-16T01:09:56.000Z",
+  "networks": ["2bf2a968-a4da-414b-a997-b3a8ff92de0b", "56f0fd52-4df1-49bd-af0c-81c717ea8bce"],
+  "primaryIp": "72.2.113.3",
+  "firewall_enabled": false,
+  "compute_node": "44454c4c-4400-1047-8053-b5c04f383432",
+  "package": "t4-standard-128M"
+}]

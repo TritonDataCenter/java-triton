@@ -1,0 +1,23 @@
+{
+  "id": "67038dfb-323d-4990-8c58-3ce7c254b99b",
+  "name": "unit-test-machine-4a32a448-0989-43c0-a5b3-8b5cbc89d310",
+  "type": "smartmachine",
+  "brand": "joyent",
+  "state": "provisioning",
+  "image": "e1faace4-e19b-11e5-928b-83849e2fd94a",
+  "ips": [],
+  "memory": 128,
+  "disk": 3072,
+  "metadata": {
+    "root_authorized_keys": "some value\n"
+  },
+  "tags": {
+    "server_type": "java-integration-test"
+  },
+  "created": "2016-04-14T18:18:32.613Z",
+  "updated": "2016-04-14T18:18:32.835Z",
+  "networks": [],
+  "firewall_enabled": false,
+  "compute_node": null,
+  "package": ""
+}
