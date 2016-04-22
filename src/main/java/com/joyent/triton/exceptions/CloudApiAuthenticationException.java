@@ -7,6 +7,9 @@ package com.joyent.triton.exceptions;
  * @since 1.0.0
  */
 public class CloudApiAuthenticationException extends CloudApiIOException {
+
+    private static final long serialVersionUID = 5557608527088148775L;
+
     /**
      * Create a new instance with the default message.
      */

@@ -13,6 +13,9 @@ import com.fasterxml.jackson.datatype.threetenbp.ThreeTenModule;
  * @since 1.0.0
  */
 public class CloudApiObjectMapper extends ObjectMapper {
+
+    private static final long serialVersionUID = -1929306315957650379L;
+
     {
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 

@@ -26,6 +26,7 @@ import org.apache.http.entity.FileEntity;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
 import org.apache.http.protocol.HttpContext;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -37,7 +38,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -54,16 +55,17 @@ public class InstancesTest {
     private static final String TEST_TAG = "java-unit-test";
     private static final ProtocolVersion HTTP_1_1 = new HttpVersion(1, 1);
 
-    private final ConfigContext config;
-    private final Instances instanceApi;
-    private final CloudApi cloudApi;
+    private ConfigContext config = null;
+    private Instances instanceApi = null;
+    private CloudApi cloudApi = null;
 
-    public InstancesTest() {
+    @BeforeClass
+    public void setup() {
         this.config = new ChainedConfigContext(
                 new DefaultsConfigContext(),
                 new StandardConfigContext()
-                    .setUser("fake_user")
-                    .setKeyId("fake_key_id")
+                        .setUser("fake_user")
+                        .setKeyId("fake_key_id")
         );
         this.cloudApi = new CloudApi(config);
         this.instanceApi = cloudApi.instances();
@@ -92,10 +94,10 @@ public class InstancesTest {
         when(mockContext.getHttpClient()).thenReturn(mockClient);
 
         when(mockClient.execute(
-                any(HttpUriRequest.class),
-                any(ResponseHandler.class),
-                any(HttpContext.class)
-        )).thenThrow(NoHttpResponseException.class);
+                isA(HttpUriRequest.class),
+                (ResponseHandler<?>)isA(ResponseHandler.class),
+                isA(HttpContext.class)
+        )).thenThrow(new NoHttpResponseException("No Response Simulation"));
 
         instanceApi.findById(mockContext, new UUID(0L, 0L));
     }

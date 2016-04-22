@@ -188,17 +188,21 @@ public final class CloudApiUtils {
      * @param map map with objects with implemented toString methods
      * @return CSV string or empty string
      */
-    public static String csv(final Map map) {
+    public static String csv(final Map<?, ?> map) {
         Objects.requireNonNull(map, "Map must be present");
 
         final StringBuilder builder = new StringBuilder();
 
-        @SuppressWarnings("unchecked")
-        final Set<Map.Entry> set = map.entrySet();
-        final Iterator<Map.Entry> itr = set.iterator();
+        /* We do this contorted type conversion because of Java's generics. */
+        @SuppressWarnings("rawtypes")
+        final Map noGenericsMap = (Map)map;
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        final Set<Map.Entry<?, ?>> set = noGenericsMap.entrySet();
+
+        final Iterator<Map.Entry<?, ?>> itr = set.iterator();
 
         while (itr.hasNext()) {
-            Map.Entry entry = itr.next();
+            Map.Entry<?, ?> entry = itr.next();
 
             if (entry == null || entry.getKey() == null) {
                 continue;

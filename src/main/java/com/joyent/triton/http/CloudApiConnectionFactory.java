@@ -1,5 +1,6 @@
 package com.joyent.triton.http;
 
+import com.joyent.http.signature.Signer;
 import com.joyent.http.signature.ThreadLocalSigner;
 import com.joyent.http.signature.apache.httpclient.HttpSignatureConfigurator;
 import com.joyent.triton.config.ConfigContext;
@@ -172,11 +173,18 @@ public class CloudApiConnectionFactory {
         final KeyPair keyPair;
         final String password = config.getPassword();
         final String keyPath = config.getKeyPath();
-        final ThreadLocalSigner signer = new ThreadLocalSigner(!config.disableNativeSignatures());
+        final ThreadLocalSigner threadLocalSigner = new ThreadLocalSigner(!config.disableNativeSignatures());
 
         try {
             if (keyPath != null) {
-                keyPair = signer.get().getKeyPair(new File(keyPath).toPath());
+                final Signer signer = threadLocalSigner.get();
+
+                if (signer == null) {
+                    final String msg = "Error getting signer instance from thread local";
+                    throw new NullPointerException(msg);
+                }
+
+                keyPair = signer.getKeyPair(new File(keyPath).toPath());
             } else {
                 final char[] charPassword;
 
@@ -187,7 +195,7 @@ public class CloudApiConnectionFactory {
                 }
 
                 String privateKeyContent = config.getPrivateKeyContent();
-                keyPair = signer.get().getKeyPair(privateKeyContent, charPassword);
+                keyPair = threadLocalSigner.get().getKeyPair(privateKeyContent, charPassword);
             }
         } catch (IOException e) {
             String msg = String.format("Unable to read key files from path: %s",

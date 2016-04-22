@@ -9,6 +9,9 @@ import static com.joyent.triton.http.CloudApiHttpHeaders.REQUEST_ID;
  * information.
  */
 public class CloudApiRemoteServerException extends CloudApiIOException {
+
+    private static final long serialVersionUID = 3043025735387722617L;
+
     /**
      * Creates a new instance.
      *

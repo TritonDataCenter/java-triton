@@ -21,6 +21,9 @@ import java.util.Set;
  * @since 1.0.0
  */
 public class PostprocessModificationModule extends SimpleModule {
+
+    private static final long serialVersionUID = 3187618789416613790L;
+
     /**
      * Immutable {@link Set} of classes to modify.
      */
