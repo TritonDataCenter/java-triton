@@ -670,7 +670,7 @@ public class Instances {
             throw e;
         } catch (IOException e) {
             final String msg = "Error making request to CloudAPI.";
-            final CloudApiIOException exception = new CloudApiIOException(e);
+            final CloudApiIOException exception = new CloudApiIOException(msg, e);
             CloudApiUtils.annotateContextedException(exception, put);
             throw exception;
         }

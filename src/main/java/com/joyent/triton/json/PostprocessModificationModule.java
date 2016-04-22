@@ -27,7 +27,7 @@ public class PostprocessModificationModule extends SimpleModule {
     private static final Set<Class<?>> MODIFIABLE_CLASSES;
 
     static {
-        final Set<Class<?>> set = new HashSet<Class<?>>(2);
+        final Set<Class<?>> set = new HashSet<>(2);
         set.add(Instance.class);
         set.add(InstanceFilter.class);
         MODIFIABLE_CLASSES = Collections.unmodifiableSet(set);
