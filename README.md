@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/joyent/java-triton.svg?branch=master)](https://travis-ci.org/joyent/java-triton)
+
 # Triton Java SDK
 
 This project is in active development. Please tweet to @shitsukoisaru if you are
