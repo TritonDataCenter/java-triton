@@ -10,6 +10,7 @@ import com.joyent.triton.exceptions.CloudApiRemoteServerException;
 import com.joyent.triton.exceptions.CloudApiResponseException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -28,6 +29,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.apache.commons.lang3.builder.ToStringBuilder.reflectionToString;
 
 /**
  * {@link ResponseHandler} implementation that handles the general case of all
@@ -179,7 +182,23 @@ public class CloudApiResponseHandler<T> implements ResponseHandler<T> {
         try (InputStream in = response.getEntity().getContent()) {
             // If everything worked as expected, go ahead and deserialize JSON body
             if (expectedStatusCodeMatched) {
-                final T result = mapper.readValue(in, deserializationType);
+                final T result;
+
+                try {
+                    result = mapper.readValue(in, deserializationType);
+                } catch (IOException e) {
+                    final String msg = "Error deserializing entity";
+                    final CloudApiIOException exception = new CloudApiIOException(msg, e);
+                    exception.setContextValue("requestId", extractRequestId(response));
+                    exception.setContextValue("entity", reflectionToString(response.getEntity(),
+                            ToStringStyle.SHORT_PREFIX_STYLE));
+                    exception.setContextValue("operationName", operationName);
+                    exception.setContextValue("deserializationType", deserializationType);
+                    exception.setContextValue("deserializationMode", deserializationMode);
+                    exception.setContextValue("responseHeaders", CloudApiUtils.asString(response.getAllHeaders()));
+
+                    throw exception;
+                }
 
                 if (result instanceof Collection) {
                     @SuppressWarnings("unchecked")

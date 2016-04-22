@@ -1,8 +1,13 @@
 package com.joyent.triton;
 
+import com.joyent.triton.http.CloudApiHttpHeaders;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionContext;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -388,5 +393,52 @@ public final class CloudApiUtils {
         }
 
         return Collections.unmodifiableSet(privateIPs);
+    }
+
+    /**
+     * Appends context attributes for the HTTP request and HTTP response objects
+     * to a {@link ExceptionContext} instance.
+     *
+     * @param exception exception to append to
+     * @param request HTTP request object
+     */
+    public static void annotateContextedException(final ExceptionContext exception,
+                                                  final HttpRequest request) {
+        annotateContextedException(exception, request, null);
+    }
+
+    /**
+     * Appends context attributes for the HTTP request and HTTP response objects
+     * to a {@link ExceptionContext} instance.
+     *
+     * @param exception exception to append to
+     * @param request HTTP request object
+     * @param response HTTP response object
+     */
+    public static void annotateContextedException(final ExceptionContext exception,
+                                                  final HttpRequest request,
+                                                  final HttpResponse response) {
+        Objects.requireNonNull(exception, "Exception context object must be present");
+
+        if (request != null) {
+            final Header requestIdHeader = request.getFirstHeader(CloudApiHttpHeaders.REQUEST_ID);
+
+            if (requestIdHeader != null) {
+                final String requestId = requestIdHeader.getValue();
+                exception.setContextValue("requestId", requestId);
+            } else {
+                exception.setContextValue("requestId", "[not set]");
+            }
+
+            exception.setContextValue("request", request);
+            final String requestHeaders = asString(request.getAllHeaders());
+            exception.setContextValue("requestHeaders", requestHeaders);
+        }
+
+        if (response != null) {
+            exception.setContextValue("response", response);
+            final String responseHeaders = asString(response.getAllHeaders());
+            exception.setContextValue("responseHeaders", responseHeaders);
+        }
     }
 }

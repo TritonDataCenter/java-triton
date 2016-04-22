@@ -1,9 +1,9 @@
 package com.joyent.triton.http;
 
-import com.joyent.triton.config.ConfigContext;
-import com.joyent.triton.config.ConfigurationException;
 import com.joyent.http.signature.ThreadLocalSigner;
 import com.joyent.http.signature.apache.httpclient.HttpSignatureConfigurator;
+import com.joyent.triton.config.ConfigContext;
+import com.joyent.triton.config.ConfigurationException;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
@@ -207,7 +207,11 @@ public class CloudApiConnectionFactory {
     protected String uriForPath(final String path) {
         Objects.requireNonNull(path, "Path must be present");
 
-        return String.format("%s/%s", config.getCloudAPIURL(), path);
+        if (path.startsWith("/")) {
+            return String.format("%s%s", config.getCloudAPIURL(), path);
+        } else {
+            return String.format("%s/%s", config.getCloudAPIURL(), path);
+        }
     }
 
     /**
