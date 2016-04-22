@@ -66,6 +66,8 @@ public class InstancesTest {
                 new StandardConfigContext()
                         .setUser("fake_user")
                         .setKeyId("fake_key_id")
+                        .setPrivateKeyContent("key content")
+
         );
         this.cloudApi = new CloudApi(this.config);
         this.instanceApi = cloudApi.instances();
