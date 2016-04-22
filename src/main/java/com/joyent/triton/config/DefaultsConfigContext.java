@@ -29,7 +29,7 @@ public class DefaultsConfigContext implements ConfigContext {
     /**
      * We assume the default rsa key in the user's home directory.
      */
-    public static final String DEFAULT_KEY_PATH;
+    public static final String KEY_PATH;
 
     /**
      * Default TLS protocols.
@@ -48,9 +48,9 @@ public class DefaultsConfigContext implements ConfigContext {
         File privateKeyFile = new File(defaultKeyPath);
 
         if (privateKeyFile.exists() && privateKeyFile.canRead()) {
-            DEFAULT_KEY_PATH = defaultKeyPath;
+            KEY_PATH = defaultKeyPath;
         } else {
-            DEFAULT_KEY_PATH = null;
+            KEY_PATH = null;
         }
 
         // Not all of the desired ciphers are supported in version pre 1.8
@@ -92,7 +92,7 @@ public class DefaultsConfigContext implements ConfigContext {
 
     @Override
     public String getKeyPath() {
-        return DEFAULT_KEY_PATH;
+        return KEY_PATH;
     }
 
     @Override
