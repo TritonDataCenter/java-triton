@@ -64,9 +64,7 @@ public class InstancesTest {
         this.config = new ChainedConfigContext(
                 new DefaultsConfigContext(),
                 new StandardConfigContext()
-                        .setUser("fake_user")
-                        .setKeyId("fake_key_id")
-                        .setPrivateKeyContent("key content")
+                        .setNoAuth(true)
 
         );
         this.cloudApi = new CloudApi(this.config);

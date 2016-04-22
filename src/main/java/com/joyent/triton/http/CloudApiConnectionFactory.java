@@ -123,8 +123,12 @@ public class CloudApiConnectionFactory {
             useNativeCodeToSign = !config.disableNativeSignatures();
         }
 
-        this.signatureConfigurator = new HttpSignatureConfigurator(
-                createKeyPair(), createCredentials(), useNativeCodeToSign);
+        if (config.noAuth()) {
+            this.signatureConfigurator = null;
+        } else {
+            this.signatureConfigurator = new HttpSignatureConfigurator(
+                    createKeyPair(), createCredentials(), useNativeCodeToSign);
+        }
 
         this.httpClientBuilder = createBuilder();
     }
