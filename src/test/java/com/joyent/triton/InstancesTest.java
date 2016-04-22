@@ -136,6 +136,7 @@ public class InstancesTest {
 
         try (CloudApiConnectionContext context = createMockContext(response)) {
             final Instance created = instanceApi.create(context, instance);
+            assertNotNull(created);
         } catch (NullPointerException e) {
             if (e.getMessage().equals("Package id must be present")) {
                 thrown = true;
@@ -163,6 +164,7 @@ public class InstancesTest {
 
         try (CloudApiConnectionContext context = createMockContext(response)) {
             final Instance created = instanceApi.create(context, instance);
+            assertNull(created);
         } catch (NullPointerException e) {
             if (e.getMessage().equals("Image id must be present")) {
                 thrown = true;
