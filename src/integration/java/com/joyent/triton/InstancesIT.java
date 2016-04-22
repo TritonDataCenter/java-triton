@@ -17,6 +17,7 @@ import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.threeten.bp.Duration;
 import org.threeten.bp.temporal.ChronoUnit;
@@ -36,9 +37,9 @@ public class InstancesIT {
     private static final String TEST_TAG_KEY = "server_type";
     private static final String TEST_TAG = "java-integration-test";
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final ConfigContext config;
-    private final Instances instanceApi;
-    private final CloudApi cloudApi;
+    private ConfigContext config = null;
+    private Instances instanceApi = null;
+    private CloudApi cloudApi = null;
 
     // US-EAST-1
     private UUID packageId = UUID.fromString("8b2288b6-efcf-4e20-df2c-e6ad6219b501");
@@ -48,7 +49,8 @@ public class InstancesIT {
 //    private UUID packageId = UUID.fromString("14ad9d54-d0f8-11e5-a759-93bdb33c9583");
 //    private UUID imageId = UUID.fromString("e1faace4-e19b-11e5-928b-83849e2fd94a");
 
-    public InstancesIT() {
+    @BeforeClass
+    public void setup() {
         this.config = new ChainedConfigContext(
                 new DefaultsConfigContext(),
                 new SystemSettingsConfigContext()
