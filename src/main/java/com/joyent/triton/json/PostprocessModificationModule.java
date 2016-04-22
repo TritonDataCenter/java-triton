@@ -21,13 +21,16 @@ import java.util.Set;
  * @since 1.0.0
  */
 public class PostprocessModificationModule extends SimpleModule {
+
+    private static final long serialVersionUID = 3187618789416613790L;
+
     /**
      * Immutable {@link Set} of classes to modify.
      */
     private static final Set<Class<?>> MODIFIABLE_CLASSES;
 
     static {
-        final Set<Class<?>> set = new HashSet<Class<?>>(2);
+        final Set<Class<?>> set = new HashSet<>(2);
         set.add(Instance.class);
         set.add(InstanceFilter.class);
         MODIFIABLE_CLASSES = Collections.unmodifiableSet(set);

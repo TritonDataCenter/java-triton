@@ -1,25 +1,32 @@
 package com.joyent.triton;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.joyent.triton.config.ChainedConfigContext;
 import com.joyent.triton.config.ConfigContext;
 import com.joyent.triton.config.DefaultsConfigContext;
 import com.joyent.triton.config.StandardConfigContext;
 import com.joyent.triton.domain.Instance;
+import com.joyent.triton.exceptions.CloudApiIOException;
 import com.joyent.triton.exceptions.CloudApiResponseException;
 import com.joyent.triton.http.CloudApiConnectionContext;
 import com.joyent.triton.http.CloudApiHttpHeaders;
-import com.google.common.collect.ImmutableList;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
+import org.apache.http.protocol.HttpContext;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -27,9 +34,11 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -46,18 +55,19 @@ public class InstancesTest {
     private static final String TEST_TAG = "java-unit-test";
     private static final ProtocolVersion HTTP_1_1 = new HttpVersion(1, 1);
 
-    private final ConfigContext config;
-    private final Instances instanceApi;
-    private final CloudApi cloudApi;
+    private ConfigContext config = null;
+    private Instances instanceApi = null;
+    private CloudApi cloudApi = null;
 
-    public InstancesTest() {
+    @BeforeClass
+    public void setup() {
         this.config = new ChainedConfigContext(
                 new DefaultsConfigContext(),
                 new StandardConfigContext()
-                    .setUser("fake_user")
-                    .setKeyId("fake_key_id")
+                        .setNoAuth(true)
+
         );
-        this.cloudApi = new CloudApi(config);
+        this.cloudApi = new CloudApi(this.config);
         this.instanceApi = cloudApi.instances();
     }
 
@@ -74,6 +84,22 @@ public class InstancesTest {
         when(context.getHttpClient()).thenReturn(client);
 
         return context;
+    }
+
+    @Test(expectedExceptions = CloudApiIOException.class)
+    public void canHandleNoResponseException() throws IOException {
+        final CloudApiConnectionContext mockContext = mock(CloudApiConnectionContext.class);
+        when(mockContext.getHttpContext()).thenReturn(new HttpClientContext());
+        final HttpClient mockClient = mock(HttpClient.class);
+        when(mockContext.getHttpClient()).thenReturn(mockClient);
+
+        when(mockClient.execute(
+                isA(HttpUriRequest.class),
+                (ResponseHandler<?>)isA(ResponseHandler.class),
+                isA(HttpContext.class)
+        )).thenThrow(new NoHttpResponseException("No Response Simulation"));
+
+        instanceApi.findById(mockContext, new UUID(0L, 0L));
     }
 
     public void canCreateInstance() throws IOException {
@@ -112,6 +138,7 @@ public class InstancesTest {
 
         try (CloudApiConnectionContext context = createMockContext(response)) {
             final Instance created = instanceApi.create(context, instance);
+            assertNotNull(created);
         } catch (NullPointerException e) {
             if (e.getMessage().equals("Package id must be present")) {
                 thrown = true;
@@ -139,6 +166,7 @@ public class InstancesTest {
 
         try (CloudApiConnectionContext context = createMockContext(response)) {
             final Instance created = instanceApi.create(context, instance);
+            assertNull(created);
         } catch (NullPointerException e) {
             if (e.getMessage().equals("Image id must be present")) {
                 thrown = true;
@@ -308,6 +336,45 @@ public class InstancesTest {
             Instance found = instanceApi.findById(context, instanceId);
 
             assertNull(found, "expecting instance to not be found");
+        }
+    }
+
+    public void canAddAdditionalTagsToAnInstance() throws IOException {
+        final StatusLine statusLine = new BasicStatusLine(HTTP_1_1, HttpStatus.SC_OK, "OK");
+        final HttpResponse response = new BasicHttpResponse(statusLine);
+        final File file = new File("src/test/data/domain/additional_tags.json");
+        final HttpEntity entity = new FileEntity(file);
+        response.setEntity(entity);
+
+        final UUID instanceId = UUID.fromString("c872d3bf-cbaa-4165-8e18-f6e3e1d94da9");
+
+        try (CloudApiConnectionContext context = createMockContext(response)) {
+            Map<String, String> tags = instanceApi.addTags(context, instanceId,
+                    ImmutableMap.of("additional_1", "val1", "additional_2", "val2"));
+
+            assertEquals(tags.size(), 3, "Expecting 3 tags");
+            assertEquals(tags.get("name"), "value");
+            assertEquals(tags.get("additional_1"), "val1");
+            assertEquals(tags.get("additional_2"), "val2");
+        }
+    }
+
+    public void canReplaceTagsOnAnInstance() throws IOException {
+        final StatusLine statusLine = new BasicStatusLine(HTTP_1_1, HttpStatus.SC_OK, "OK");
+        final HttpResponse response = new BasicHttpResponse(statusLine);
+        final File file = new File("src/test/data/domain/replace_tags.json");
+        final HttpEntity entity = new FileEntity(file);
+        response.setEntity(entity);
+
+        final UUID instanceId = UUID.fromString("c872d3bf-cbaa-4165-8e18-f6e3e1d94da9");
+
+        try (CloudApiConnectionContext context = createMockContext(response)) {
+            Map<String, String> tags = instanceApi.replaceTags(context, instanceId,
+                    ImmutableMap.of("additional_1", "val1", "additional_2", "val2"));
+
+            assertEquals(tags.size(), 2, "Expecting 2 tags");
+            assertEquals(tags.get("additional_1"), "val1");
+            assertEquals(tags.get("additional_2"), "val2");
         }
     }
 }

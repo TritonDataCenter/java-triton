@@ -1,9 +1,11 @@
 package com.joyent.triton.http;
 
-import com.joyent.triton.config.ConfigContext;
-import com.joyent.triton.config.ConfigurationException;
+import com.joyent.http.signature.Signer;
 import com.joyent.http.signature.ThreadLocalSigner;
 import com.joyent.http.signature.apache.httpclient.HttpSignatureConfigurator;
+import com.joyent.triton.config.ConfigContext;
+import com.joyent.triton.config.ConfigurationException;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
@@ -29,6 +31,8 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
+
 /**
  * Factory class that creates instances of
  * {@link org.apache.http.client.HttpClient} configured for use with
@@ -52,6 +58,11 @@ import java.util.Objects;
  * @since 1.0.0
  */
 public class CloudApiConnectionFactory {
+    /**
+     * Logger instance.
+     */
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     /**
      * Default DNS resolver for all connections to the CloudAPI.
      */
@@ -88,6 +99,10 @@ public class CloudApiConnectionFactory {
 
         this.config = config;
 
+        if (config.getCloudAPIURL() == null) {
+            throw new ConfigurationException("The CloudAPI URL setting must be set");
+        }
+
         // Test root URL for validity
 
         try {
@@ -108,8 +123,12 @@ public class CloudApiConnectionFactory {
             useNativeCodeToSign = !config.disableNativeSignatures();
         }
 
-        this.signatureConfigurator = new HttpSignatureConfigurator(
-                createKeyPair(), createCredentials(), useNativeCodeToSign);
+        if (config.noAuth()) {
+            this.signatureConfigurator = null;
+        } else {
+            this.signatureConfigurator = new HttpSignatureConfigurator(
+                    createKeyPair(), createCredentials(), useNativeCodeToSign);
+        }
 
         this.httpClientBuilder = createBuilder();
     }
@@ -172,11 +191,30 @@ public class CloudApiConnectionFactory {
         final KeyPair keyPair;
         final String password = config.getPassword();
         final String keyPath = config.getKeyPath();
-        final ThreadLocalSigner signer = new ThreadLocalSigner(!config.disableNativeSignatures());
+        final ThreadLocalSigner threadLocalSigner;
+
+        if (config.disableNativeSignatures() == null) {
+            threadLocalSigner = new ThreadLocalSigner();
+        } else {
+            threadLocalSigner = new ThreadLocalSigner(!config.disableNativeSignatures());
+        }
+
+        final Signer signer = threadLocalSigner.get();
+
+        if (logger.isDebugEnabled()) {
+            final boolean nativeGmp = toBoolean(System.getProperty("native.jnagmp"));
+            final String enabled = BooleanUtils.toString(nativeGmp, "enabled", "disabled");
+            logger.debug("Native GMP is {}", enabled);
+        }
+
+        if (signer == null) {
+            final String msg = "Error getting signer instance from thread local";
+            throw new NullPointerException(msg);
+        }
 
         try {
             if (keyPath != null) {
-                keyPair = signer.get().getKeyPair(new File(keyPath).toPath());
+                keyPair = signer.getKeyPair(new File(keyPath).toPath());
             } else {
                 final char[] charPassword;
 
@@ -186,8 +224,17 @@ public class CloudApiConnectionFactory {
                     charPassword = null;
                 }
 
-                String privateKeyContent = config.getPrivateKeyContent();
-                keyPair = signer.get().getKeyPair(privateKeyContent, charPassword);
+                final String privateKeyContent = config.getPrivateKeyContent();
+
+                if (privateKeyContent == null) {
+                    String msg = "Private key content setting must be set if "
+                            + "key file path is not set";
+                    ConfigurationException exception = new ConfigurationException(msg);
+                    exception.setContextValue("config", config);
+                    throw exception;
+                }
+
+                keyPair = signer.getKeyPair(privateKeyContent, charPassword);
             }
         } catch (IOException e) {
             String msg = String.format("Unable to read key files from path: %s",
@@ -207,7 +254,11 @@ public class CloudApiConnectionFactory {
     protected String uriForPath(final String path) {
         Objects.requireNonNull(path, "Path must be present");
 
-        return String.format("%s/%s", config.getCloudAPIURL(), path);
+        if (path.startsWith("/")) {
+            return String.format("%s%s", config.getCloudAPIURL(), path);
+        } else {
+            return String.format("%s/%s", config.getCloudAPIURL(), path);
+        }
     }
 
     /**

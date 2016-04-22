@@ -20,6 +20,9 @@ import java.util.Set;
  * @since 1.0.0
  */
 class FlatteningModifySerializer extends BeanSerializerBase {
+
+    private static final long serialVersionUID = -4611878621406309864L;
+
     /**
      * Creates a new instance of {@link FlatteningModifySerializer}.
      *
@@ -115,7 +118,7 @@ class FlatteningModifySerializer extends BeanSerializerBase {
         serializeFields(bean, jgen, provider);
 
         if (bean instanceof Taggable) {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings({"unchecked", "rawtypes"})
             Taggable instance = (Taggable)bean;
 
             @SuppressWarnings("unchecked")
@@ -124,7 +127,7 @@ class FlatteningModifySerializer extends BeanSerializerBase {
         }
 
         if (bean instanceof MetadataEnabled) {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings({"unchecked", "rawtypes"})
             MetadataEnabled instance = (MetadataEnabled) bean;
 
             @SuppressWarnings("unchecked")

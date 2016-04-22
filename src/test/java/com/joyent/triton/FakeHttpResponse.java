@@ -1,7 +1,11 @@
 package com.joyent.triton;
 
-import org.apache.http.*;
-import org.apache.http.params.HttpParams;
+import org.apache.http.Header;
+import org.apache.http.HeaderIterator;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
 
 import java.util.Locale;
 
@@ -135,12 +139,12 @@ public class FakeHttpResponse implements HttpResponse {
     }
 
     @Override
-    public HttpParams getParams() {
+    public org.apache.http.params.HttpParams getParams() {
         return null;
     }
 
     @Override
-    public void setParams(HttpParams params) {
+    public void setParams(org.apache.http.params.HttpParams params) {
 
     }
 }

@@ -8,6 +8,9 @@ package com.joyent.triton.exceptions;
  * @since 1.0.0
  */
 public class InstanceGoneMissingException extends CloudApiException {
+
+    private static final long serialVersionUID = 7671068035637796710L;
+
     /** Constructs a new runtime exception with {@code null} as its
      * detail message.  The cause is not initialized, and may subsequently be
      * initialized by a call to {@link #initCause}.

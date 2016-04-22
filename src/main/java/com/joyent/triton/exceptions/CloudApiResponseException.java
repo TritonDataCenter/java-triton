@@ -15,6 +15,9 @@ import java.util.Map;
  * @since 1.0.0
  */
 public class CloudApiResponseException extends CloudApiIOException {
+
+    private static final long serialVersionUID = 7187748955562792221L;
+
     /**
      * Plain text string containing the operation name - used for logging and errors.
      */

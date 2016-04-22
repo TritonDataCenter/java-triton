@@ -55,15 +55,19 @@ public class CloudApiApacheHttpClientContext implements CloudApiConnectionContex
      */
     protected HttpContext buildHttpContext(final HttpSignatureConfigurator configurator) {
         final HttpClientContext context = HttpClientContext.create();
-        AuthCache authCache = new BasicAuthCache();
-        context.setAuthCache(authCache);
 
-        AuthState authState = new AuthState();
-        authState.update(configurator.getAuthScheme(), configurator.getCredentials());
+        if (configurator != null) {
+            AuthCache authCache = new BasicAuthCache();
+            context.setAuthCache(authCache);
 
-        context.setAttribute(HttpClientContext.TARGET_AUTH_STATE,
-                authState);
-        context.getTargetAuthState().setState(AuthProtocolState.UNCHALLENGED);
+            AuthState authState = new AuthState();
+            authState.update(configurator.getAuthScheme(), configurator.getCredentials());
+
+            context.setAttribute(HttpClientContext.TARGET_AUTH_STATE,
+                    authState);
+            context.getTargetAuthState().setState(AuthProtocolState.UNCHALLENGED);
+
+        }
 
         return context;
     }

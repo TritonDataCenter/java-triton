@@ -196,7 +196,7 @@ public abstract class BaseChainedConfigContext implements ConfigContext {
         }
 
         if (isPresent(context.getPrivateKeyContent())) {
-            if (isPresent(keyPath)) {
+            if (isPresent(context.getKeyPath())) {
                 String msg = "You can't set both a private key path and private key content";
                 ConfigurationException exception = new ConfigurationException(msg);
                 exception.setContextValue("privateKeyPath", context.getKeyPath());

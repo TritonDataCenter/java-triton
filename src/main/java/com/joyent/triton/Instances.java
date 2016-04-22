@@ -204,10 +204,13 @@ public class Instances {
                 return Collections.emptyIterator();
             }
         } catch (CloudApiIOException | CloudApiException e) {
-            // Add request context
-            e.setContextValue("request", head);
-            e.setContextValue("requestHeaders", CloudApiUtils.asString(head.getAllHeaders()));
+            CloudApiUtils.annotateContextedException(e, head);
             throw e;
+        } catch (IOException e) {
+            final String msg = "Error making request to CloudAPI.";
+            final CloudApiIOException exception = new CloudApiIOException(msg, e);
+            CloudApiUtils.annotateContextedException(exception, head);
+            throw exception;
         }
 
         final HttpGet get = connectionFactory.get(path, filterParams);
@@ -234,10 +237,13 @@ public class Instances {
 
             return result.iterator();
         } catch (CloudApiIOException | CloudApiException e) {
-            // Add request context
-            e.setContextValue("request", get);
-            e.setContextValue("requestHeaders", CloudApiUtils.asString(get.getAllHeaders()));
+            CloudApiUtils.annotateContextedException(e, get);
             throw e;
+        } catch (IOException e) {
+            final String msg = "Error making request to CloudAPI.";
+            final CloudApiIOException exception = new CloudApiIOException(msg, e);
+            CloudApiUtils.annotateContextedException(exception, get);
+            throw exception;
         }
     }
 
@@ -271,10 +277,13 @@ public class Instances {
 
             return result;
         } catch (CloudApiIOException | CloudApiException e) {
-            // Add request context
-            e.setContextValue("request", post);
-            e.setContextValue("requestHeaders", CloudApiUtils.asString(post.getAllHeaders()));
+            CloudApiUtils.annotateContextedException(e, post);
             throw e;
+        } catch (IOException e) {
+            final String msg = "Error making request to CloudAPI.";
+            final CloudApiIOException exception = new CloudApiIOException(msg, e);
+            CloudApiUtils.annotateContextedException(exception, post);
+            throw exception;
         }
     }
 
@@ -336,10 +345,13 @@ public class Instances {
 
             logger.info("Deleted instance: {}", instanceId);
         } catch (CloudApiIOException | CloudApiException e) {
-            // Add request context
-            e.setContextValue("request", delete);
-            e.setContextValue("requestHeaders", CloudApiUtils.asString(delete.getAllHeaders()));
+            CloudApiUtils.annotateContextedException(e, delete);
             throw e;
+        } catch (IOException e) {
+            final String msg = "Error making request to CloudAPI.";
+            final CloudApiIOException exception = new CloudApiIOException(msg, e);
+            CloudApiUtils.annotateContextedException(exception, delete);
+            throw exception;
         }
     }
 
@@ -534,10 +546,13 @@ public class Instances {
         try {
             return client.execute(get, findInstanceHandler, context.getHttpContext());
         } catch (CloudApiIOException | CloudApiException e) {
-            // Add request context
-            e.setContextValue("request", get);
-            e.setContextValue("requestHeaders", CloudApiUtils.asString(get.getAllHeaders()));
+            CloudApiUtils.annotateContextedException(e, get);
             throw e;
+        } catch (IOException e) {
+            final String msg = "Error making request to CloudAPI.";
+            final CloudApiIOException exception = new CloudApiIOException(msg, e);
+            CloudApiUtils.annotateContextedException(exception, get);
+            throw exception;
         }
     }
 
@@ -593,10 +608,13 @@ public class Instances {
 
             return result;
         } catch (CloudApiIOException | CloudApiException e) {
-            // Add request context
-            e.setContextValue("request", post);
-            e.setContextValue("requestHeaders", CloudApiUtils.asString(post.getAllHeaders()));
+            CloudApiUtils.annotateContextedException(e, post);
             throw e;
+        } catch (IOException e) {
+            final String msg = "Error making request to CloudAPI.";
+            final CloudApiIOException exception = new CloudApiIOException(msg, e);
+            CloudApiUtils.annotateContextedException(exception, post);
+            throw exception;
         }
     }
 
@@ -648,10 +666,13 @@ public class Instances {
 
             return result;
         } catch (CloudApiIOException | CloudApiException e) {
-            // Add request context
-            e.setContextValue("request", put);
-            e.setContextValue("requestHeaders", CloudApiUtils.asString(put.getAllHeaders()));
+            CloudApiUtils.annotateContextedException(e, put);
             throw e;
+        } catch (IOException e) {
+            final String msg = "Error making request to CloudAPI.";
+            final CloudApiIOException exception = new CloudApiIOException(msg, e);
+            CloudApiUtils.annotateContextedException(exception, put);
+            throw exception;
         }
     }
 
