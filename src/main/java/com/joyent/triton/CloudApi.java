@@ -1,9 +1,11 @@
 package com.joyent.triton;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.joyent.triton.config.ConfigContext;
 import com.joyent.triton.http.CloudApiApacheHttpClientContext;
 import com.joyent.triton.http.CloudApiConnectionContext;
 import com.joyent.triton.http.CloudApiConnectionFactory;
+import com.joyent.triton.json.CloudApiObjectMapper;
 
 /**
  * Class providing central functionality useful when interacting with all of
@@ -24,9 +26,19 @@ public class CloudApi {
     private final CloudApiConnectionFactory connectionFactory;
 
     /**
+     * Customized Jackson serialization/deserialization object.
+     */
+    private final ObjectMapper mapper = new CloudApiObjectMapper();
+
+    /**
      * Reference to Instances API section.
      */
     private final Instances instances;
+
+    /**
+     * Reference to the Packages API section.
+     */
+    private final Packages packages;
 
     /**
      * Creates a new instance based on the passed configuration.
@@ -35,7 +47,8 @@ public class CloudApi {
     public CloudApi(final ConfigContext config) {
         this.config = config;
         this.connectionFactory = new CloudApiConnectionFactory(config);
-        this.instances = new Instances(this);
+        this.instances = new Instances(this, mapper);
+        this.packages = new Packages(this, mapper);
     }
 
     public CloudApiConnectionFactory getConnectionFactory() {
@@ -59,6 +72,16 @@ public class CloudApi {
      */
     public Instances instances() {
         return instances;
+    }
+
+
+    /**
+     * Provides access to the Packages API.
+     *
+     * @return a references to a configured {@link Packages} object.
+     */
+    public Packages packages() {
+        return packages;
     }
 
     /**

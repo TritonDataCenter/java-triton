@@ -9,7 +9,7 @@ import java.util.UUID;
 
 import static org.testng.Assert.assertEquals;
 
-@Test
+@Test(groups = { "unit" })
 public class PackageTest {
     private static final CloudApiObjectMapper mapper = new CloudApiObjectMapper(true);
 
