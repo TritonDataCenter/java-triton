@@ -1,5 +1,7 @@
 package com.joyent.triton.domain;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -64,11 +66,10 @@ public class ErrorDetail {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ErrorDetail{");
-        sb.append("code='").append(code).append('\'');
-        sb.append(", message='").append(message).append('\'');
-        sb.append(", errors=").append(errors);
-        sb.append('}');
-        return sb.toString();
+        return new ToStringBuilder(this)
+                .append("code", code)
+                .append("message", message)
+                .append("errors", errors)
+                .toString();
     }
 }

@@ -1,6 +1,7 @@
 package com.joyent.triton.domain;
 
 import com.joyent.triton.CloudApiUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -39,7 +40,7 @@ public class Locality implements Entity {
     private Set<UUID> far;
 
     /**
-     * Creates a new instance.
+     * Creates a new instance. Use the fluent interface to set properties.
      */
     public Locality() {
     }
@@ -118,11 +119,10 @@ public class Locality implements Entity {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Locality{");
-        sb.append("strict=").append(strict);
-        sb.append(", near=").append(near);
-        sb.append(", far=").append(far);
-        sb.append('}');
-        return sb.toString();
+        return new ToStringBuilder(this)
+                .append("strict", strict)
+                .append("near", near)
+                .append("far", far)
+                .toString();
     }
 }

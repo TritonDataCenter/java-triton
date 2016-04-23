@@ -2,6 +2,7 @@ package com.joyent.triton.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.joyent.triton.CloudApiUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.threeten.bp.Instant;
 
 import java.net.InetAddress;
@@ -149,7 +150,7 @@ public class Instance implements Entity, Taggable<Instance>, MetadataEnabled<Ins
     private UUID packageId;
 
     /**
-     * Creates a new instance.
+     * Creates a new instance. Use the fluent interface to set properties.
      */
     public Instance() {
     }
@@ -477,27 +478,27 @@ public class Instance implements Entity, Taggable<Instance>, MetadataEnabled<Ins
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Instance{");
-        sb.append("id=").append(id);
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", brand='").append(brand).append('\'');
-        sb.append(", state='").append(state).append('\'');
-        sb.append(", image=").append(image);
-        sb.append(", ips=").append(ips);
-        sb.append(", memory=").append(memory);
-        sb.append(", disk=").append(disk);
-        sb.append(", metadata=").append(metadata);
-        sb.append(", tags=").append(tags);
-        sb.append(", created=").append(created);
-        sb.append(", updated=").append(updated);
-        sb.append(", networks=").append(networks);
-        sb.append(", primaryIp=").append(primaryIp);
-        sb.append(", firewallEnabled=").append(firewallEnabled);
-        sb.append(", computeNode=").append(computeNode);
-        sb.append(", packageName='").append(packageName).append('\'');
-        sb.append(", dnsNames=").append(dnsNames);
-        sb.append(", locality=").append(locality);
-        sb.append('}');
-        return sb.toString();
+        return new ToStringBuilder(this)
+                .append("id", id)
+                .append("name", name)
+                .append("brand", brand)
+                .append("state", state)
+                .append("image", image)
+                .append("ips", CloudApiUtils.asString(ips))
+                .append("memory", memory)
+                .append("disk", disk)
+                .append("metadata", CloudApiUtils.asString(metadata))
+                .append("tags", CloudApiUtils.asString(tags))
+                .append("created", created)
+                .append("updated", updated)
+                .append("networks", networks)
+                .append("primaryIp", primaryIp)
+                .append("firewallEnabled", firewallEnabled)
+                .append("computeNode", computeNode)
+                .append("packageName", packageName)
+                .append("dnsNames", dnsNames)
+                .append("locality", locality)
+                .append("packageId", packageId)
+                .toString();
     }
 }
