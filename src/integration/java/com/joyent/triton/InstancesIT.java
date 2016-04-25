@@ -5,6 +5,7 @@ import com.joyent.triton.config.ConfigContext;
 import com.joyent.triton.config.DefaultsConfigContext;
 import com.joyent.triton.config.SystemSettingsConfigContext;
 import com.joyent.triton.domain.Instance;
+import com.joyent.triton.domain.Package;
 import com.joyent.triton.http.CloudApiConnectionContext;
 import com.joyent.triton.queryfilters.InstanceFilter;
 import com.google.common.base.Function;
@@ -14,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.joyent.triton.queryfilters.PackageFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
@@ -23,12 +25,7 @@ import org.threeten.bp.Duration;
 import org.threeten.bp.temporal.ChronoUnit;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.testng.Assert.*;
 
@@ -40,23 +37,23 @@ public class InstancesIT {
     private ConfigContext config = null;
     private Instances instanceApi = null;
     private CloudApi cloudApi = null;
+    private UUID packageId = null;
 
-    // US-EAST-1
-    private UUID packageId = UUID.fromString("8b2288b6-efcf-4e20-df2c-e6ad6219b501");
+    // US-EAST
     private UUID imageId = UUID.fromString("e1faace4-e19b-11e5-928b-83849e2fd94a");
 
     // US-EAST-3B
-//    private UUID packageId = UUID.fromString("14ad9d54-d0f8-11e5-a759-93bdb33c9583");
 //    private UUID imageId = UUID.fromString("e1faace4-e19b-11e5-928b-83849e2fd94a");
 
     @BeforeClass
-    public void setup() {
+    public void setup() throws IOException {
         this.config = new ChainedConfigContext(
                 new DefaultsConfigContext(),
                 new SystemSettingsConfigContext()
         );
         this.cloudApi = new CloudApi(config);
         this.instanceApi = cloudApi.instances();
+        this.packageId = findIntegrationTestPackage().getId();
     }
 
     @AfterClass
@@ -75,6 +72,19 @@ public class InstancesIT {
                 }
             }
         }
+    }
+
+    private Package findIntegrationTestPackage() throws IOException {
+        final Collection<Package> smallPackages = cloudApi.packages().smallestMemory();
+
+        if (smallPackages.isEmpty()) {
+            throw new IllegalArgumentException("There are no valid packages defined");
+        }
+
+        final Package smallest = smallPackages.iterator().next();
+        logger.debug("Package used for integration tests: {}", smallest);
+
+        return smallest;
     }
 
     @Test

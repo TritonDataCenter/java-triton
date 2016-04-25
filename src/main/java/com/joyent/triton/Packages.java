@@ -20,9 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static org.apache.http.HttpStatus.SC_OK;
 
@@ -71,6 +69,11 @@ public class Packages {
     private final CloudApiResponseHandler<List<Package>> listPackageHandler;
 
     /**
+     * Response handler for finding specific packages.
+     */
+    private final CloudApiResponseHandler<Package> findByIdPackageHandler;
+
+    /**
      * Creates a new configured {@code Packages} API instance.
      * @param cloudApi reference to {@link CloudApi} instance that is backing API calls.
      * @param mapper reference to the jackson object mapper to use for processing JSON
@@ -83,9 +86,13 @@ public class Packages {
         this.connectionFactory = new CloudApiConnectionFactory(config);
 
         this.listPackageHandler = new CloudApiResponseHandler<>(
-                "list packages", mapper, new TypeReference<List<Package>>() {
-        },
+                "list packages", mapper, new TypeReference<List<Package>>() { },
                 SC_OK, false
+        );
+
+        this.findByIdPackageHandler = new CloudApiResponseHandler<Package>(
+                "find package", mapper, new TypeReference<Package>() { },
+                SC_OK, true
         );
     }
 
@@ -148,5 +155,113 @@ public class Packages {
             CloudApiUtils.annotateContextedException(exception, get);
             throw exception;
         }
+    }
+
+    /**
+     * Get a package by specifying its id.
+     *
+     * @param packageId UUID of the packge
+     * @return package matching id if found, otherwise null
+     * @throws IOException thrown when there is a problem getting the package information
+     */
+    public Package findById(final UUID packageId) throws IOException {
+        try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
+            return findById(packageId);
+        }
+    }
+
+    /**
+     * Get a package by specifying its id.
+     *
+     * @param context request context used for sharing resources between API operations
+     * @param packageId UUID of the packge
+     * @return package matching id if found, otherwise null
+     * @throws IOException thrown when there is a problem getting the package information
+     */
+    public Package findById(final CloudApiConnectionContext context,
+                            final UUID packageId) throws IOException  {
+        Objects.requireNonNull(context, "Context must be present");
+        Objects.requireNonNull(packageId, "Package id must be present");
+
+        final String path = String.format("/%s/packages/%s",
+                config.getUser(), packageId);
+
+        final HttpClient client = context.getHttpClient();
+
+        final HttpGet get = connectionFactory.get(path);
+
+        try {
+            return client.execute(get, findByIdPackageHandler, context.getHttpContext());
+        } catch (CloudApiIOException | CloudApiException e) {
+            CloudApiUtils.annotateContextedException(e, get);
+            throw e;
+        } catch (IOException e) {
+            final String msg = "Error making request to CloudAPI.";
+            final CloudApiIOException exception = new CloudApiIOException(msg, e);
+            CloudApiUtils.annotateContextedException(exception, get);
+            throw exception;
+        }
+    }
+
+    /**
+     * Finds the packages with the smallest memory footprint. This is a very
+     * useful method for when you just want to create an instance with the
+     * smallest amount of memory as possible.
+     *
+     * @return the package with the lowest amount of memory or null if there are no packages
+     * @throws IOException thrown when there is a problem getting the package information
+     */
+    public Collection<Package> smallestMemory() throws IOException {
+        try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
+            return smallestMemory(context);
+        }
+    }
+
+    /**
+     * Finds the packages with the smallest memory footprint. This is a very
+     * useful method for when you just want to create an instance with the
+     * smallest amount of memory as possible.
+     *
+     * @param context request context used for sharing resources between API operations
+     * @return the packages with the lowest amount of memory or an empty collection if none
+     * @throws IOException thrown when there is a problem getting the package information
+     */
+    public Collection<Package> smallestMemory(final CloudApiConnectionContext context) throws IOException {
+        return smallestMemory(context, new PackageFilter());
+    }
+
+    /**
+     * Finds the packages with the smallest memory footprint. This is a very
+     * useful method for when you just want to create an instance with the
+     * smallest amount of memory as possible.
+     *
+     * @param context request context used for sharing resources between API operations
+     * @param filter query filter to filter results by
+     * @return the packages with the lowest amount of memory or an empty collection if none
+     * @throws IOException thrown when there is a problem getting the package information
+     */
+    public Collection<Package> smallestMemory(final CloudApiConnectionContext context,
+                                              final PackageFilter filter) throws IOException {
+        Objects.requireNonNull(context, "Context must be present");
+        Objects.requireNonNull(filter, "Filter must be present");
+
+        final Collection<Package> packages = list(context, filter);
+
+        LinkedHashSet<Package> subset = new LinkedHashSet<>();
+        long smallest = -1;
+
+        for (Package pkg : packages) {
+            if (smallest < 0) {
+                smallest = pkg.getMemory();
+                subset.add(pkg);
+            } else if (smallest > pkg.getMemory()) {
+                subset.clear();
+                subset.add(pkg);
+            } else if (smallest == pkg.getMemory()) {
+                subset.add(pkg);
+            }
+        }
+
+        return Collections.unmodifiableSet(subset);
     }
 }

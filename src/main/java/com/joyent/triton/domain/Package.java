@@ -1,6 +1,7 @@
 package com.joyent.triton.domain;
 
 import com.joyent.triton.CloudApiUtils;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Collections;
@@ -16,7 +17,7 @@ import java.util.UUID;
  * @author <a href="https://github.com/dekobon">Elijah Zupancic</a>
  * @since 1.0.0
  */
-public class Package implements Entity {
+public class Package implements Entity, Comparable<Package> {
     /**
      * Java object serialization id.
      */
@@ -116,6 +117,16 @@ public class Package implements Entity {
         final Map<String, Object> map = asMap();
 
         return CloudApiUtils.asStringMap(map);
+    }
+
+    @Override
+    public int compareTo(Package o) {
+        final CompareToBuilder builder = new CompareToBuilder();
+        builder.append(this.getGroup(), o.getGroup())
+               .append(this.getName(), o.getName())
+               .append(this.getId(), o.getId());
+
+        return builder.toComparison();
     }
 
     public UUID getId() {
