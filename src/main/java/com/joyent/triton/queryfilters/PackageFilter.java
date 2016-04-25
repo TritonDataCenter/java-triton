@@ -105,7 +105,7 @@ public class PackageFilter implements QueryFilter {
         return vcpus;
     }
 
-    public PackageFilter setVcpus(Integer vcpus) {
+    public PackageFilter setVcpus(final Integer vcpus) {
         this.vcpus = vcpus;
         return this;
     }

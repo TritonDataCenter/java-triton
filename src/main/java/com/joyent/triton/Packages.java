@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -89,18 +89,39 @@ public class Packages {
         );
     }
 
-    public Iterator<Package> list() throws IOException {
+    /**
+     * Lists all of the available packages (instance types).
+     *
+     * @return a collection of every package type
+     * @throws IOException thrown when there is a problem getting the package list
+     */
+    public Collection<Package> list() throws IOException {
         try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
             return list(context);
         }
     }
 
-    public Iterator<Package> list(final CloudApiConnectionContext context) throws IOException {
+    /**
+     * Lists all of the available packages (instance types).
+     *
+     * @param context request context used for sharing resources between API operations
+     * @return a collection of every package type
+     * @throws IOException thrown when there is a problem getting the package list
+     */
+    public Collection<Package> list(final CloudApiConnectionContext context) throws IOException {
         return list(context, new PackageFilter());
     }
 
-    public Iterator<Package> list(final CloudApiConnectionContext context,
-                                  final PackageFilter filter) throws IOException {
+    /**
+     * Lists all of the available packages (instance types).
+     *
+     * @param context request context used for sharing resources between API operations
+     * @param filter query filter to filter results by
+     * @return a collection of every package type
+     * @throws IOException thrown when there is a problem getting the package list
+     */
+    public Collection<Package> list(final CloudApiConnectionContext context,
+                                    final PackageFilter filter) throws IOException {
         Objects.requireNonNull(context, "Context object must be present");
         Objects.requireNonNull(context, "Filter object must be present");
 
@@ -117,7 +138,7 @@ public class Packages {
                     (HttpCollectionResponse<Package>) client.execute(
                             get, listPackageHandler, context.getHttpContext());
 
-            return result.iterator();
+            return result;
         } catch (CloudApiIOException | CloudApiException e) {
             CloudApiUtils.annotateContextedException(e, get);
             throw e;
