@@ -30,7 +30,10 @@ dependencies and maintain compatibility with Java 7 for the time being.
 
 Ideally, the project is in a state where we can now start to add swaths of
 functionality using the patterns that have been established in the existing 
-code. 
+code.
+
+For the current status of what is implemented from the CloudAPI, refer to the
+[ROADMAP.md](ROADMAP.md) document.
 
 ## Configuration
 

@@ -13,7 +13,6 @@ import com.joyent.triton.http.CloudApiHttpHeaders;
 import com.joyent.triton.http.CloudApiResponseHandler;
 import com.joyent.triton.http.HttpCollectionResponse;
 import com.joyent.triton.http.JsonEntity;
-import com.joyent.triton.json.CloudApiObjectMapper;
 import com.joyent.triton.queryfilters.InstanceFilter;
 import com.joyent.triton.queryfilters.InstanceFilterConverter;
 import com.joyent.triton.queryfilters.QueryFilterConverter;
@@ -79,7 +78,7 @@ public class Instances {
     /**
      * Customized Jackson serialization/deserialization object.
      */
-    private final ObjectMapper mapper = new CloudApiObjectMapper();
+    private final ObjectMapper mapper;
 
     /**
      * Query filter converter class that allows you to convert from a {@link InstanceFilter}
@@ -121,8 +120,10 @@ public class Instances {
     /**
      * Creates a new configured {@code Instances} API instance.
      * @param cloudApi reference to {@link CloudApi} instance that is backing API calls.
+     * @param mapper reference to the jackson object mapper to use for processing JSON
      */
-    Instances(final CloudApi cloudApi) {
+    Instances(final CloudApi cloudApi, final ObjectMapper mapper) {
+        this.mapper = mapper;
         this.cloudApi = cloudApi;
         this.config = cloudApi.getConfig();
 

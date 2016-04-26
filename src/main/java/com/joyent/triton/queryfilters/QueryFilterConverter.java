@@ -9,6 +9,8 @@ import java.util.List;
  * converted to a set of query parameters.
  *
  * @param <T> {@link QueryFilter} class implementation
+ * @author <a href="https://github.com/dekobon">Elijah Zupancic</a>
+ * @since 1.0.0
  */
 public interface QueryFilterConverter<T extends QueryFilter> {
     /**

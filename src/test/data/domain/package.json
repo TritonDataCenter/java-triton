@@ -1,0 +1,13 @@
+{
+  "name": "g3-highcpu-16-smartos",
+  "memory": 16384,
+  "disk": 614400,
+  "swap": 32768,
+  "vcpus": 0,
+  "lwps": 4000,
+  "default": false,
+  "id": "efb48acd-1816-4879-ad4d-0438e1077ae9",
+  "version": "1.1.0",
+  "description": "High CPU 16 GB RAM 16 vCPUs and bursting 600 GB Disk",
+  "group": "High CPU"
+}

@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 
+import static com.joyent.triton.FakeHttpClient.createMockContext;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -69,21 +70,6 @@ public class InstancesTest {
         );
         this.cloudApi = new CloudApi(this.config);
         this.instanceApi = cloudApi.instances();
-    }
-
-    private CloudApiConnectionContext createMockContext(final HttpResponse response) {
-        return createMockContext(new LinkedList<>(Collections.singletonList(response)));
-    }
-
-    private CloudApiConnectionContext createMockContext(final Queue<HttpResponse> responses) {
-        final CloudApiConnectionContext context = mock(CloudApiConnectionContext.class);
-        final HttpClientContext httpClientContext = new HttpClientContext();
-        when(context.getHttpContext()).thenReturn(httpClientContext);
-
-        final HttpClient client = new FakeHttpClient(responses);
-        when(context.getHttpClient()).thenReturn(client);
-
-        return context;
     }
 
     @Test(expectedExceptions = CloudApiIOException.class)

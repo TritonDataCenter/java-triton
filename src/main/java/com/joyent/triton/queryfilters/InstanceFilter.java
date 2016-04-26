@@ -1,7 +1,9 @@
 package com.joyent.triton.queryfilters;
 
+import com.joyent.triton.CloudApiUtils;
 import com.joyent.triton.domain.Taggable;
 import com.joyent.triton.domain.Instance;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Map;
 import java.util.Objects;
@@ -183,6 +185,7 @@ public class InstanceFilter implements QueryFilter, Taggable<InstanceFilter> {
         return this;
     }
 
+    @Override
     public boolean isEmpty() {
         return getBrand() == null
                 && getName() == null
@@ -230,19 +233,18 @@ public class InstanceFilter implements QueryFilter, Taggable<InstanceFilter> {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("InstanceFilter{");
-        sb.append("brand='").append(brand).append('\'');
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", image=").append(image);
-        sb.append(", state='").append(state).append('\'');
-        sb.append(", memory=").append(memory);
-        sb.append(", tombstone=").append(tombstone);
-        sb.append(", limit=").append(limit);
-        sb.append(", offset=").append(offset);
-        sb.append(", tags=").append(tags);
-        sb.append(", listOnlyDocker=").append(listOnlyDocker);
-        sb.append(", includeCredentials=").append(includeCredentials);
-        sb.append('}');
-        return sb.toString();
+        return new ToStringBuilder(this)
+                .append("brand", brand)
+                .append("name", name)
+                .append("image", image)
+                .append("state", state)
+                .append("memory", memory)
+                .append("tombstone", tombstone)
+                .append("limit", limit)
+                .append("offset", offset)
+                .append("tags", CloudApiUtils.asString(tags))
+                .append("listOnlyDocker", listOnlyDocker)
+                .append("includeCredentials", includeCredentials)
+                .toString();
     }
 }
