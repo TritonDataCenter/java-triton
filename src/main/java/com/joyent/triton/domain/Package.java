@@ -120,7 +120,7 @@ public class Package implements Entity, Comparable<Package> {
     }
 
     @Override
-    public int compareTo(Package o) {
+    public int compareTo(final Package o) {
         final CompareToBuilder builder = new CompareToBuilder();
         builder.append(this.getGroup(), o.getGroup())
                .append(this.getName(), o.getName())
