@@ -165,13 +165,13 @@ public class Packages {
     /**
      * Get a package by specifying its id.
      *
-     * @param packageId UUID of the packge
+     * @param packageId UUID of the package
      * @return package matching id if found, otherwise null
      * @throws IOException thrown when there is a problem getting the package information
      */
     public Package findById(final UUID packageId) throws IOException {
         try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
-            return findById(packageId);
+            return findById(context, packageId);
         }
     }
 
@@ -179,7 +179,7 @@ public class Packages {
      * Get a package by specifying its id.
      *
      * @param context request context used for sharing resources between API operations
-     * @param packageId UUID of the packge
+     * @param packageId UUID of the package
      * @return package matching id if found, otherwise null
      * @throws IOException thrown when there is a problem getting the package information
      */
@@ -256,13 +256,16 @@ public class Packages {
         long smallest = -1;
 
         for (Package pkg : packages) {
+            final long memory = pkg.getMemory();
+
             if (smallest < 0) {
-                smallest = pkg.getMemory();
+                smallest = memory;
                 subset.add(pkg);
-            } else if (smallest > pkg.getMemory()) {
+            } else if (smallest > memory) {
+                smallest = memory;
                 subset.clear();
                 subset.add(pkg);
-            } else if (smallest == pkg.getMemory()) {
+            } else if (smallest == memory) {
                 subset.add(pkg);
             }
         }

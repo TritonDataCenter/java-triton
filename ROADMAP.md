@@ -5,11 +5,13 @@ All API calls that have been implemented in the SDK have been crossed out.
 ### Account
 * GetAccount
 * UpdateAccount
+
 ### Keys
 * ListKeys
 * GetKey
 * CreateKey
 * DeleteKey
+
 ### Users
 * ListUsers
 * GetUser
@@ -17,6 +19,7 @@ All API calls that have been implemented in the SDK have been crossed out.
 * UpdateUser
 * ChangeUserPassword
 * DeleteUser
+
 ### Roles
 * ListRoles
 * GetRole
@@ -25,25 +28,31 @@ All API calls that have been implemented in the SDK have been crossed out.
 * DeleteRole
 * Role Tags
 * SetRoleTags
+
 ### Policies
 * ListPolicies
 * GetPolicy
 * CreatePolicy
 * UpdatePolicy
 * DeletePolicy
+
 ### User SSH Keys
 * ListUserKeys
 * GetUserKey
 * CreateUserKey
 * DeleteUserKey
+
 ### Config
 * GetConfig
 * UpdateConfig
+
 ### Datacenters
 * ListDatacenters
 * GetDatacenter
+
 ### Services
 * ListServices
+
 ### Images
 * ListImages
 * GetImage
@@ -51,9 +60,11 @@ All API calls that have been implemented in the SDK have been crossed out.
 * ExportImage
 * CreateImageFromMachine
 * UpdateImage
+
 ### Packages
 * ~~ListPackages~~
 * ~~GetPackage~~
+
 ### Machines
 * ~~ListMachines~~
 * ~~GetMachine~~
@@ -83,6 +94,7 @@ All API calls that have been implemented in the SDK have been crossed out.
 * DeleteMachineTags
 * DeleteMachine
 * MachineAudit
+
 ### Analytics
 * DescribeAnalytics
 * ListInstrumentations
@@ -92,6 +104,7 @@ All API calls that have been implemented in the SDK have been crossed out.
 * GetInstrumentationHeatmapDetails
 * CreateInstrumentation
 * DeleteInstrumentation
+
 ### FirewallRules
 * Firewall Rule Syntax
 * ListFirewallRules
@@ -103,6 +116,7 @@ All API calls that have been implemented in the SDK have been crossed out.
 * DeleteFirewallRule
 * ListMachineFirewallRules
 * ListFirewallRuleMachines
+
 ### Fabrics
 * ListFabricVLANs
 * CreateFabricVLAN
@@ -113,9 +127,11 @@ All API calls that have been implemented in the SDK have been crossed out.
 * CreateFabricNetwork
 * GetFabricNetwork
 * DeleteFabricNetwork
+
 ### Networks
 * ListNetworks
 * GetNetwork
+
 ### Nics
 * ListNics
 * GetNic
