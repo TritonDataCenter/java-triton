@@ -11,7 +11,7 @@ import static com.joyent.triton.config.MapConfigContext.URL_KEY;
 import static com.joyent.triton.config.MapConfigContext.USER_KEY;
 import static org.testng.Assert.assertEquals;
 
-@Test(groups = { "config" })
+@Test(groups = { "unit" })
 public class SystemSettingsConfigContextTest {
 
     public void systemPropsOverwriteDefaults() {

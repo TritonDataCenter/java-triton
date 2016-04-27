@@ -55,7 +55,7 @@ public class PackagesTest {
     public void canListPackages() throws IOException {
         final StatusLine statusLine = new BasicStatusLine(HTTP_1_1, HttpStatus.SC_OK, "OK");
         final HttpResponse response = new BasicHttpResponse(statusLine);
-        final File file = new File("src/test/data/domain/packages.json");
+        final File file = new File("src/test/data/packages/packages.json");
         final HttpEntity entity = new FileEntity(file);
         response.setEntity(entity);
 
@@ -69,7 +69,7 @@ public class PackagesTest {
     public void canFindTheSmallestMemoryPackages() throws IOException {
         final StatusLine statusLine = new BasicStatusLine(HTTP_1_1, HttpStatus.SC_OK, "OK");
         final HttpResponse response = new BasicHttpResponse(statusLine);
-        final File file = new File("src/test/data/domain/packages.json");
+        final File file = new File("src/test/data/packages/packages.json");
         final HttpEntity entity = new FileEntity(file);
         response.setEntity(entity);
 

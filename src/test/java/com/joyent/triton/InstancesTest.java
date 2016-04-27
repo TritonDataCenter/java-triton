@@ -264,7 +264,7 @@ public class InstancesTest {
 
         {
             final HttpResponse response = new BasicHttpResponse(statusLine);
-            final File file = new File("src/test/data/domain/instance_provisioning.json");
+            final File file = new File("src/test/data/instances/instance_provisioning.json");
             final HttpEntity entity = new FileEntity(file);
             response.setEntity(entity);
             // Imitate going to the server 4 times to poll for changes
@@ -328,7 +328,7 @@ public class InstancesTest {
     public void canAddAdditionalTagsToAnInstance() throws IOException {
         final StatusLine statusLine = new BasicStatusLine(HTTP_1_1, HttpStatus.SC_OK, "OK");
         final HttpResponse response = new BasicHttpResponse(statusLine);
-        final File file = new File("src/test/data/domain/additional_tags.json");
+        final File file = new File("src/test/data/instances/additional_tags.json");
         final HttpEntity entity = new FileEntity(file);
         response.setEntity(entity);
 
@@ -348,7 +348,7 @@ public class InstancesTest {
     public void canReplaceTagsOnAnInstance() throws IOException {
         final StatusLine statusLine = new BasicStatusLine(HTTP_1_1, HttpStatus.SC_OK, "OK");
         final HttpResponse response = new BasicHttpResponse(statusLine);
-        final File file = new File("src/test/data/domain/replace_tags.json");
+        final File file = new File("src/test/data/instances/replace_tags.json");
         final HttpEntity entity = new FileEntity(file);
         response.setEntity(entity);
 
