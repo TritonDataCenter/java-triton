@@ -2,6 +2,7 @@ package com.joyent.triton.domain;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.joyent.triton.CloudApiUtils;
 import com.joyent.triton.json.CloudApiObjectMapper;
 import org.testng.annotations.Test;
 import org.threeten.bp.Instant;
@@ -53,5 +54,51 @@ public class ImageTest {
         assertEquals(image.getOwner(), UUID.fromString("930896af-bf8c-48d4-885c-6573a94b1853"));
         assertEquals(image.isPubliclyAvailable(), true);
         assertEquals(image.getState(), "active");
+    }
+
+    @Test(dependsOnMethods = "canDeserialize")
+    public void canConvertToAnObjectMap() throws Exception {
+        File file = new File("src/test/data/domain/image.json");
+        Image image = mapper.readValue(file, Image.class);
+
+        Map<String, Object> map = image.asMap();
+
+        assertEquals(map.get("id"), image.getId());
+        assertEquals(map.get("name"), image.getName());
+        assertEquals(map.get("version"), image.getVersion());
+        assertEquals(map.get("os"), image.getOs());
+        assertEquals(map.get("requirements"), image.getRequirements());
+        assertEquals(map.get("type"), image.getType());
+        assertEquals(map.get("description"), image.getDescription());
+        assertEquals(map.get("files"), image.getFiles());
+        assertEquals(map.get("tags"), image.getTags());
+        assertEquals(map.get("homepage"), image.getHomepage());
+        assertEquals(map.get("published_at"), image.getPublishedAt());
+        assertEquals(map.get("owner"), image.getOwner());
+        assertEquals(map.get("public"), image.isPubliclyAvailable());
+        assertEquals(map.get("state"), image.getState());
+    }
+
+    @Test(dependsOnMethods = "canDeserialize")
+    public void canConvertToAnStringMap() throws Exception {
+        File file = new File("src/test/data/domain/image.json");
+        Image image = mapper.readValue(file, Image.class);
+
+        Map<String, String> map = image.asStringMap();
+
+        assertEquals(map.get("id"), image.getId().toString());
+        assertEquals(map.get("name"), image.getName());
+        assertEquals(map.get("version"), image.getVersion());
+        assertEquals(map.get("os"), image.getOs());
+        assertEquals(map.get("requirements"), CloudApiUtils.csv(image.getRequirements()));
+        assertEquals(map.get("type"), image.getType());
+        assertEquals(map.get("description"), image.getDescription());
+        assertEquals(map.get("files"), CloudApiUtils.csv(image.getFiles()));
+        assertEquals(map.get("tags"), CloudApiUtils.csv(image.getTags()));
+        assertEquals(map.get("homepage"), image.getHomepage());
+        assertEquals(map.get("published_at"), image.getPublishedAt().toString());
+        assertEquals(map.get("owner"), image.getOwner().toString());
+        assertEquals(map.get("public"), String.valueOf(image.isPubliclyAvailable()));
+        assertEquals(map.get("state"), image.getState());
     }
 }

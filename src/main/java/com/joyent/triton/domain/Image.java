@@ -5,11 +5,7 @@ import com.joyent.triton.CloudApiUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.threeten.bp.Instant;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Domain object representing the an "image" in CloudAPI. Images are operating system
@@ -117,13 +113,70 @@ public class Image implements Entity {
 
     @Override
     public Map<String, Object> asMap() {
-        return null;
+        final Map<String, Object> attributes = new LinkedHashMap<>();
+
+        if (getId() != null) {
+            attributes.put("id", getId());
+        }
+
+        if (getName() != null) {
+            attributes.put("name", getName());
+        }
+
+        if (getVersion() != null) {
+            attributes.put("version", getVersion());
+        }
+
+        if (getOs() != null) {
+            attributes.put("os", getOs());
+        }
+
+        if (getRequirements() != null) {
+            attributes.put("requirements", getRequirements());
+        }
+
+        if (getType() != null) {
+            attributes.put("type", getType());
+        }
+
+        if (getDescription() != null) {
+            attributes.put("description", getDescription());
+        }
+
+        if (getFiles() != null) {
+            attributes.put("files", getFiles());
+        }
+
+        if (getTags() != null) {
+            attributes.put("tags", getTags());
+        }
+
+        if (getHomepage() != null) {
+            attributes.put("homepage", getHomepage());
+        }
+
+        if (getPublishedAt() != null) {
+            attributes.put("published_at", getPublishedAt());
+        }
+
+        if (getOwner() != null) {
+            attributes.put("owner", getOwner());
+        }
+
+        if (getState() != null) {
+            attributes.put("state", getState());
+        }
+
+        attributes.put("public", isPubliclyAvailable());
+
+        return Collections.unmodifiableMap(attributes);
     }
 
     @Override
     public Map<String, String> asStringMap() {
-        return null;
-    }
+        final Map<String, Object> map = asMap();
+
+        return CloudApiUtils.asStringMap(map);    }
 
     public List<ErrorDetail> getErrors() {
         return errors;
