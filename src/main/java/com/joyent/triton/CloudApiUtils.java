@@ -170,7 +170,7 @@ public final class CloudApiUtils {
                         (Iterator<Map.Entry<?, ?>>)map.entrySet().iterator();
 
                 while (mapItr.hasNext()) {
-                    Map.Entry<?,?> entry = mapItr.next();
+                    Map.Entry<?, ?> entry = mapItr.next();
                     sb.append("[")
                       .append(String.valueOf(entry.getKey()))
                       .append("=")

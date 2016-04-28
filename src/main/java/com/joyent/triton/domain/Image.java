@@ -5,7 +5,13 @@ import com.joyent.triton.CloudApiUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.threeten.bp.Instant;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Domain object representing the an "image" in CloudAPI. Images are operating system
@@ -326,7 +332,7 @@ public class Image implements Entity {
         return description;
     }
 
-    public Image setDescription(String description) {
+    public Image setDescription(final String description) {
         this.description = description;
         return this;
     }
