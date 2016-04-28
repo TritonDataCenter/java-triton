@@ -160,18 +160,35 @@ public final class CloudApiUtils {
 
             if (o instanceof InetAddress) {
                 value = ((InetAddress)o).getHostAddress();
+            } else if (o instanceof Map) {
+                StringBuilder sb = new StringBuilder();
+
+                @SuppressWarnings("unchecked")
+                final Map map = (Map)o;
+                @SuppressWarnings("unchecked")
+                final Iterator<Map.Entry<?, ?>> mapItr =
+                        (Iterator<Map.Entry<?, ?>>)map.entrySet().iterator();
+
+                while (mapItr.hasNext()) {
+                    Map.Entry<?,?> entry = mapItr.next();
+                    sb.append("[")
+                      .append(String.valueOf(entry.getKey()))
+                      .append("=")
+                      .append(entry.getValue())
+                      .append("]");
+
+                    if (mapItr.hasNext()) {
+                        sb.append(" ");
+                    }
+                }
+
+                value = sb.toString();
             } else {
                 value = o.toString();
             }
 
-            if (value.contains(",")) {
-                String msg = String.format(
-                        "Iterable value contained comma. "
-                        + "No commas allowed. Input: %s", value);
-                throw new IllegalArgumentException(msg);
-            }
-
-            builder.append(value);
+            // Strip any commas out of the string
+            builder.append(StringUtils.replaceChars(value, ',', ' '));
 
             if (itr.hasNext()) {
                 builder.append(", ");

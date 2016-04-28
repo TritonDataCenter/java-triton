@@ -1,0 +1,14 @@
+{
+  "code": "InvalidHeader",
+  "message": "Authorization header invalid: clock skew of 2296.141s was greater than 300s",
+  "errors": [
+    {
+      "key1": "first sub error key1",
+      "key2": "first sub error key2"
+    },
+    {
+      "key1": "second sub error key1",
+      "key2": "second sub error key2"
+    }
+  ]
+}

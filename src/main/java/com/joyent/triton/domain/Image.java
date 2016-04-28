@@ -61,6 +61,11 @@ public class Image implements Entity {
     private String homepage;
 
     /**
+     * Plain text describing the image.
+     */
+    private String description;
+
+    /**
      * An array of image files that make up each image. Currently only a single file per image is supported.
      */
     private Set<ImageFiles> files;
@@ -68,6 +73,7 @@ public class Image implements Entity {
     /**
      * The time this image has been made publicly available.
      */
+    @JsonProperty("published_at")
     private Instant publishedAt;
 
     /**
@@ -263,6 +269,15 @@ public class Image implements Entity {
         return this;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public Image setDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -280,6 +295,7 @@ public class Image implements Entity {
                 && Objects.equals(version, image.version)
                 && Objects.equals(type, image.type)
                 && Objects.equals(requirements, image.requirements)
+                && Objects.equals(description, image.description)
                 && Objects.equals(homepage, image.homepage)
                 && Objects.equals(files, image.files)
                 && Objects.equals(publishedAt, image.publishedAt)
@@ -293,7 +309,7 @@ public class Image implements Entity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, os, version, type, requirements,
+        return Objects.hash(id, name, os, version, type, requirements, description,
                 homepage, files, publishedAt, owner, publiclyAvailable,
                 state, tags, eula, acl, errors);
     }
@@ -307,6 +323,7 @@ public class Image implements Entity {
                 .append("version", version)
                 .append("type", type)
                 .append("requirements", requirements)
+                .append("description", description)
                 .append("homepage", homepage)
                 .append("files", CloudApiUtils.csv(files))
                 .append("publishedAt", publishedAt)

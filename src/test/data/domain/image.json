@@ -1,0 +1,27 @@
+{
+  "id": "2b683a82-a066-11e3-97ab-2faa44701c5a",
+  "name": "base",
+  "version": "13.4.0",
+  "os": "smartos",
+  "requirements": {
+    "password": "required"
+  },
+  "type": "zone-dataset",
+  "description": "A 32-bit SmartOS image with just essential packages installed. Ideal for users who are comfortable with setting up their own environment and tools.",
+  "files": [
+    {
+      "compression": "gzip",
+      "sha1": "3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b",
+      "size": 110742036
+    }
+  ],
+  "tags": {
+    "role": "os",
+    "group": "base-32"
+  },
+  "homepage": "https://docs.joyent.com/images/smartos/base",
+  "published_at": "2014-02-28T10:50:42Z",
+  "owner": "930896af-bf8c-48d4-885c-6573a94b1853",
+  "public": true,
+  "state": "active"
+}
