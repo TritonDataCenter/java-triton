@@ -79,6 +79,10 @@ public class ImageFiles implements Entity {
         return this;
     }
 
+    /**
+     * The SHA1 checksum as a string.
+     * @return lowercase hex string of sha1 checksum
+     */
     public String getSha1() {
         if (sha1 != null) {
             return new String(Hex.encodeHex(sha1, true));

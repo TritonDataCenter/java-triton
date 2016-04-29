@@ -28,7 +28,7 @@ public class CloudApiHttpRequestRetryHandler extends DefaultHttpRequestRetryHand
     /**
      * Logger instance.
      */
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * List of all exception types that can't be retried.
