@@ -44,4 +44,31 @@ public class ImageFilesTest {
         assertEquals(map.get("compression"), imageFiles.getCompression());
         assertEquals(map.get("sha1"), imageFiles.getSha1());
     }
+
+    public void equalsFunctionsProperly() throws Exception {
+        ImageFiles expected = new ImageFiles()
+                .setCompression("gzip")
+                .setSha1("3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b")
+                .setSize(110742036);
+
+        File file = new File("src/test/data/domain/imagefiles.json");
+        ImageFiles actual = mapper.readValue(file, ImageFiles.class);
+
+        assertEquals(actual, expected, "Equals method was not implemented correctly");
+    }
+
+    public void hashFunctionsProperly() throws Exception {
+        ImageFiles expected = new ImageFiles()
+                .setCompression("gzip")
+                .setSha1("3bebb6ae2cdb26eef20cfb30fdc4a00a059a0b7b")
+                .setSize(110742036);
+
+        File file = new File("src/test/data/domain/imagefiles.json");
+        ImageFiles actual = mapper.readValue(file, ImageFiles.class);
+
+        final int expectedHash = expected.hashCode();
+        final int actualHash = actual.hashCode();
+
+        assertEquals(actualHash, expectedHash, "Hash method was not implemented correctly");
+    }
 }

@@ -55,7 +55,7 @@ public class Image implements Entity {
      * Contains a grouping of various minimum requirements for provisioning a machine with this image.
      * For example 'password' indicates that a password must be provided.
      */
-    private Map<String, String> requirements;
+    private Map<String, Object> requirements;
 
     /**
      * The URL for a web page with more detailed information for this image.
@@ -274,11 +274,11 @@ public class Image implements Entity {
         return this;
     }
 
-    public Map<String, String> getRequirements() {
+    public Map<String, Object> getRequirements() {
         return requirements;
     }
 
-    public Image setRequirements(final Map<String, String> requirements) {
+    public Image setRequirements(final Map<String, Object> requirements) {
         this.requirements = requirements;
         return this;
     }

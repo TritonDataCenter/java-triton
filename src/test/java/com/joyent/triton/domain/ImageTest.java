@@ -27,7 +27,8 @@ public class ImageTest {
         assertEquals(image.getName(), "base");
         assertEquals(image.getVersion(), "13.4.0");
         assertEquals(image.getOs(), "smartos");
-        assertEquals(image.getRequirements(), ImmutableMap.of("password", "required"));
+        assertEquals(image.getRequirements(),
+                ImmutableMap.of("min_memory", 1024, "min_ram", 1024));
         assertEquals(image.getType(), "zone-dataset");
         assertEquals(image.getDescription(), "A 32-bit SmartOS image with just essential "
                 + "packages installed. Ideal for users who are comfortable with setting "

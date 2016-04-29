@@ -1,12 +1,19 @@
 package com.joyent.triton.domain;
 
 import com.joyent.triton.CloudApiUtils;
+import com.joyent.triton.exceptions.CloudApiException;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.bouncycastle.crypto.tls.MACAlgorithm.sha;
 
 /**
  * Domain object representing the files property on an {@link Image}.
@@ -16,6 +23,8 @@ import java.util.Objects;
  */
 public class ImageFiles implements Entity {
 
+    private static final long serialVersionUID = 309357437150257452L;
+
     /**
      * The type of file compression used for the image file. One of 'bzip2', 'gzip', 'none'.
      */
@@ -24,7 +33,7 @@ public class ImageFiles implements Entity {
     /**
      * SHA-1 hex digest of the file content. Used for corruption checking.
      */
-    private String sha1;
+    private byte[] sha1;
 
     /**
      * File size in bytes.
@@ -71,11 +80,28 @@ public class ImageFiles implements Entity {
     }
 
     public String getSha1() {
-        return sha1;
+        if (sha1 != null) {
+            return new String(Hex.encodeHex(sha1, true));
+        }
+
+        return null;
+    }
+
+    public byte[] getSha1Bytes() {
+        return this.sha1;
     }
 
     public ImageFiles setSha1(final String sha1) {
-        this.sha1 = sha1;
+        try {
+            this.sha1 = Hex.decodeHex(sha1.toCharArray());
+        } catch (DecoderException e) {
+            CloudApiException exception = new CloudApiException(
+                    "Unable to decode hex string", e);
+            exception.setContextValue("hexString", sha1);
+
+            throw exception;
+        }
+
         return this;
     }
 
@@ -98,22 +124,27 @@ public class ImageFiles implements Entity {
             return false;
         }
 
-        ImageFiles that = (ImageFiles) o;
+        final ImageFiles that = (ImageFiles) o;
+
         return size == that.size
                 && Objects.equals(compression, that.compression)
-                && Objects.equals(sha1, that.sha1);
+                && Arrays.equals(sha1, that.sha1);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(compression, sha1, size);
+        return new HashCodeBuilder()
+                .append(size)
+                .append(compression)
+                .append(sha)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
                 .append("compression", compression)
-                .append("sha1", sha1)
+                .append("sha1", getSha1())
                 .append("size", size)
                 .toString();
     }

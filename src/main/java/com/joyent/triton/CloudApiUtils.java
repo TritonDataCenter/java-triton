@@ -163,7 +163,7 @@ public final class CloudApiUtils {
             } else if (o instanceof Map) {
                 StringBuilder sb = new StringBuilder();
 
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings({ "unchecked", "rawtypes" })
                 final Map map = (Map)o;
                 @SuppressWarnings("unchecked")
                 final Iterator<Map.Entry<?, ?>> mapItr =
