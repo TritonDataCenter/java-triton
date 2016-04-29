@@ -1,5 +1,8 @@
 package com.joyent.triton.domain;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.joyent.triton.CloudApiUtils;
@@ -8,6 +11,9 @@ import org.testng.annotations.Test;
 import org.threeten.bp.Instant;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -101,5 +107,142 @@ public class ImageTest {
         assertEquals(map.get("owner"), image.getOwner().toString());
         assertEquals(map.get("public"), String.valueOf(image.isPubliclyAvailable()));
         assertEquals(map.get("state"), image.getState());
+    }
+
+    public void canSortByVersionsWithDots() {
+        List<String> versions = ImmutableList.of(
+                "0.0.1",
+                "0.0.2",
+                "0.1.0",
+                "0.1.4",
+                "0.2",
+                "0.2.3",
+                "0.2.9",
+                "0.2.17",
+                "1.9.2",
+                "2.1",
+                "2.1.9"
+        );
+
+        assertVersionsSort(versions);
+    }
+
+    public void canSortByReverseOrder() {
+        List<String> versions = ImmutableList.of(
+                "2.1.9",
+                "2.1",
+                "1.9.2",
+                "0.2.17",
+                "0.2.9",
+                "0.2.3",
+                "0.2",
+                "0.1.4",
+                "0.1.0",
+                "0.0.2",
+                "0.0.1"
+        );
+
+        assertVersionsSort(versions, false);
+    }
+
+    public void canSortDateVersions() {
+        List<String> versions = ImmutableList.of(
+                "20160204",
+                "20160208",
+                "20160217.1",
+                "20160217.2",
+                "20160217.2",
+                "20160218",
+                "20160219"
+        );
+
+        assertVersionsSort(versions);
+    }
+
+    public void canSortWithMixedStrings() {
+        List<String> versions = ImmutableList.of(
+                "0.0.1.beta1",
+                "0.0.2.beta2",
+                "0.1.0",
+                "0.1.4",
+                "0.2",
+                "0.2.3",
+                "0.2.9",
+                "0.2.17",
+                "0.2.poodle",
+                "1.9.2",
+                "2.1",
+                "2.1.9",
+                "dog",
+                "dog.2.0"
+        );
+
+        assertVersionsSort(versions);
+    }
+
+    public void canSortWithNullsVersions() {
+        List<String> versions = new ArrayList<>();
+        versions.add(null);
+        versions.add(null);
+        versions.add("20160204");
+        versions.add("20160208");
+        versions.add("20160217.1");
+        versions.add("20160217.2");
+        versions.add("20160217.2");
+        versions.add("20160218");
+        versions.add("20160219");
+
+        List<String> copy = new ArrayList<>(versions);
+        Collections.shuffle(copy);
+
+        List<Image> images = FluentIterable.from(copy).transform(
+                new Function<String, Image>() {
+                    @Override
+                    public Image apply(final String s) {
+                        return new Image().setVersion(s);
+                    }
+                }).toSortedList(new Image.VersionComparator());
+
+        final List<String> actual = new ArrayList<>(versions.size());
+
+        for (Image i : images) {
+            actual.add(i.getVersion());
+        }
+
+        assertEquals(actual, versions,
+                "Versions were not sorted correctly.\n"
+                        + "Expected order: " + CloudApiUtils.csv(versions) + "\n"
+                        + "Actual order:   " + CloudApiUtils.csv(actual) + "\n");
+    }
+
+    private static void assertVersionsSort(final List<String> versions) {
+        assertVersionsSort(versions, true);
+    }
+
+    private static void assertVersionsSort(final List<String> versions,
+                                           final boolean lowToHigh) {
+        List<String> copy = new ArrayList<>(versions);
+        Collections.shuffle(copy);
+
+        List<Image> images = FluentIterable.from(copy).transform(
+                new Function<String, Image>() {
+                    @Override
+                    public Image apply(final String s) {
+                        return new Image().setVersion(s);
+                    }
+                }).toSortedList(new Image.VersionComparator(lowToHigh));
+
+        List<String> actual = FluentIterable.from(images).transform(
+                new Function<Image, String>() {
+                    @Override
+                    public String apply(final Image i) {
+                        return i.getVersion();
+                    }
+                }).toList();
+
+        assertEquals(actual, versions,
+                "Versions were not sorted correctly.\n"
+                        + "Expected order: " + CloudApiUtils.csv(versions) + "\n"
+                        + "Actual order:   " + CloudApiUtils.csv(actual) + "\n");
     }
 }

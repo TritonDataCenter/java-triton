@@ -1,13 +1,5 @@
 package com.joyent.triton;
 
-import com.joyent.triton.config.ChainedConfigContext;
-import com.joyent.triton.config.ConfigContext;
-import com.joyent.triton.config.DefaultsConfigContext;
-import com.joyent.triton.config.SystemSettingsConfigContext;
-import com.joyent.triton.domain.Instance;
-import com.joyent.triton.domain.Package;
-import com.joyent.triton.http.CloudApiConnectionContext;
-import com.joyent.triton.queryfilters.InstanceFilter;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
@@ -15,7 +7,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.joyent.triton.queryfilters.PackageFilter;
+import com.joyent.triton.config.ChainedConfigContext;
+import com.joyent.triton.config.ConfigContext;
+import com.joyent.triton.config.DefaultsConfigContext;
+import com.joyent.triton.config.SystemSettingsConfigContext;
+import com.joyent.triton.domain.Image;
+import com.joyent.triton.domain.Instance;
+import com.joyent.triton.domain.Package;
+import com.joyent.triton.http.CloudApiConnectionContext;
+import com.joyent.triton.queryfilters.ImageFilter;
+import com.joyent.triton.queryfilters.InstanceFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
@@ -25,9 +26,17 @@ import org.threeten.bp.Duration;
 import org.threeten.bp.temporal.ChronoUnit;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 @Test(groups = { "integration" })
 public class InstancesIT {
@@ -38,12 +47,7 @@ public class InstancesIT {
     private Instances instanceApi = null;
     private CloudApi cloudApi = null;
     private UUID packageId = null;
-
-    // US-EAST
-    private UUID imageId = UUID.fromString("e1faace4-e19b-11e5-928b-83849e2fd94a");
-
-    // US-EAST-3B
-//    private UUID imageId = UUID.fromString("e1faace4-e19b-11e5-928b-83849e2fd94a");
+    private UUID imageId = null;
 
     @BeforeClass
     public void setup() throws IOException {
@@ -53,7 +57,11 @@ public class InstancesIT {
         );
         this.cloudApi = new CloudApi(config);
         this.instanceApi = cloudApi.instances();
-        this.packageId = findIntegrationTestPackage().getId();
+
+        try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
+            this.packageId = findIntegrationTestPackage(context).getId();
+            this.imageId = findIntegrationTestImage(context).getId();
+        }
     }
 
     @AfterClass
@@ -74,8 +82,10 @@ public class InstancesIT {
         }
     }
 
-    private Package findIntegrationTestPackage() throws IOException {
-        final Collection<Package> smallPackages = cloudApi.packages().smallestMemory();
+    private Package findIntegrationTestPackage(CloudApiConnectionContext context)
+            throws IOException {
+        final Collection<Package> smallPackages = cloudApi.packages()
+                .smallestMemory(context);
 
         if (smallPackages.isEmpty()) {
             throw new IllegalArgumentException("There are no valid packages defined");
@@ -85,6 +95,26 @@ public class InstancesIT {
         logger.debug("Package used for integration tests: {}", smallest);
 
         return smallest;
+    }
+
+    private Image findIntegrationTestImage(CloudApiConnectionContext context)
+            throws IOException {
+        final ImageFilter filter = new ImageFilter()
+                .setOs("smartos")
+                .setName("base-64");
+
+        final Collection<Image> images = cloudApi.images()
+                .listLatestVersions(context, filter);
+
+        if (images.isEmpty()) {
+            throw new IllegalArgumentException("There are no valid images defined");
+        }
+
+        Image image = images.iterator().next();
+
+        logger.debug("Image used for integration tests: {}", image);
+
+        return image;
     }
 
     @Test

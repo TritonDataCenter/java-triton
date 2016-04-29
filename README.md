@@ -2,8 +2,12 @@
 
 # Triton Java SDK
 
-This project is in active development. Please tweet to @shitsukoisaru if you are
-interested in contributing.
+[java-triton](https://github.com/joyent/java-triton) is a community-maintained Java
+SDK for interacting with Joyent's Triton cloud provisioning interface - 
+[CloudAPI](https://apidocs.joyent.com/cloudapi/).
+
+This project is under active development. We are targeting our first release to
+be 1.0.0 and all versions under 1.0.0 are considered beta builds.
 
 ## Installation
 
@@ -35,7 +39,7 @@ code.
 For the current status of what is implemented from the CloudAPI, refer to the
 [ROADMAP.md](ROADMAP.md) document.
 
-## Configuration
+## Configuration 
 
 Configuration parameters take precedence from left to right - values on the
 left are overridden by values on the right.

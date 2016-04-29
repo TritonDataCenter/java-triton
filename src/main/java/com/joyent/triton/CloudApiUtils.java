@@ -143,7 +143,9 @@ public final class CloudApiUtils {
      * @return CSV string or empty string
      */
     public static String csv(final Iterable<?> stringable) {
-        Objects.requireNonNull(stringable, "Iterable value must be present");
+        if (stringable == null) {
+            return "";
+        }
 
         final StringBuilder builder = new StringBuilder();
 

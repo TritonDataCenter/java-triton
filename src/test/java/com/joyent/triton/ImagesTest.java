@@ -97,4 +97,18 @@ public class ImagesTest {
             assertNull(pkg);
         }
     }
+
+    public void canListOnlyTheLatestImages() throws IOException {
+        final StatusLine statusLine = new BasicStatusLine(HTTP_1_1, HttpStatus.SC_OK, "OK");
+        final HttpResponse response = new BasicHttpResponse(statusLine);
+        final File file = new File("src/test/data/images/list_images.json");
+        final HttpEntity entity = new FileEntity(file);
+        response.setEntity(entity);
+
+        try (CloudApiConnectionContext context = createMockContext(response)) {
+            Collection<Image> images = imagesApi.listLatestVersions(context);
+            assertFalse(images.isEmpty(), "This should not be an empty collection");
+            assertEquals(images.size(), 26, "Expected 405 images");
+        }
+    }
 }

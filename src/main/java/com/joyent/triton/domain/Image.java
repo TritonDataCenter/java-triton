@@ -2,16 +2,22 @@ package com.joyent.triton.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.joyent.triton.CloudApiUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.threeten.bp.Instant;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+
+import static org.apache.commons.lang3.math.NumberUtils.isDigits;
 
 /**
  * Domain object representing the an "image" in CloudAPI. Images are operating system
@@ -394,5 +400,108 @@ public class Image implements Entity {
                 .append("acl", acl)
                 .append("errors", CloudApiUtils.csv(errors))
                 .toString();
+    }
+
+    /**
+     * Sorts {@link Image} objects by their version identifier in the order
+     * or specified in the constructor.
+     */
+    public static class VersionComparator implements Comparator<Image> {
+        /**
+         * Maximum number of subversion sections to parse.
+         */
+        private static final int MAX_SUBVERSIONS = 4;
+
+        /**
+         * Order low version to high if true.
+         */
+        private final boolean lowToHigh;
+
+        /**
+         * Creates a new instance.
+         *
+         * @param lowToHigh order low version to high if true
+         */
+        public VersionComparator(final boolean lowToHigh) {
+            this.lowToHigh = lowToHigh;
+        }
+
+        /**
+         * Creates a new instance defaulting to low to high ordering.
+         */
+         public VersionComparator() {
+            this(true);
+        }
+
+        @Override
+        public int compare(final Image image1, final Image image2) {
+            final Image o1;
+            final Image o2;
+
+            if (lowToHigh) {
+                o1 = image1;
+                o2 = image2;
+            } else {
+                o1 = image2;
+                o2 = image1;
+            }
+
+            if (o1 == null && o2 == null) {
+                return 0;
+            }
+
+            if (o1 == null) {
+                return 1;
+            }
+
+            if (o2 == null) {
+                return -1;
+            }
+
+            final String[] v1 = tokenizeVersion(o1.getVersion());
+            final String[] v2 = tokenizeVersion(o2.getVersion());
+
+            CompareToBuilder builder = new CompareToBuilder()
+                    .append(o1.getName(), o2.getName())
+                    .append(o1.getOs(), o2.getOs());
+
+            for (int i = 0; i < MAX_SUBVERSIONS; i++) {
+                final String t1 = v1[i];
+                final String t2 = v2[i];
+
+                if (isDigits(t1) && isDigits(t2)) {
+                    builder.append(Integer.parseInt(t1), Integer.parseInt(t2));
+                } else {
+                    builder.append(t1, t2);
+                }
+            }
+
+            return builder
+                    .append(o1.getPublishedAt(), o2.getPublishedAt())
+                    .append(o1.getOwner(), o2.getOwner())
+                    .append(o1.getState(), o2.getState())
+                    .toComparison();
+        }
+
+        /**
+         * Tokenizes a version string into subversions.
+         *
+         * @param version version string
+         * @return an array of subversions with unknown subversions coded as 0
+         */
+        private String[] tokenizeVersion(final String version) {
+            final String[] parts = new String[MAX_SUBVERSIONS];
+            Arrays.fill(parts, "0");
+
+            if (StringUtils.isBlank(version)) {
+                return parts;
+            }
+
+            final String[] tokens = StringUtils.split(version, ".", MAX_SUBVERSIONS);
+
+            System.arraycopy(tokens, 0, parts, 0, tokens.length);
+
+            return parts;
+        }
     }
 }

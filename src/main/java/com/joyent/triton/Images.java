@@ -10,12 +10,16 @@ import com.joyent.triton.queryfilters.ImageFilter;
 import com.joyent.triton.queryfilters.ImageFilterConverter;
 import com.joyent.triton.queryfilters.PackageFilter;
 import com.joyent.triton.queryfilters.QueryFilterConverter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -111,6 +115,69 @@ public class Images extends BaseApiAccessor {
                 (HttpCollectionResponse<Image>) execute(context, get, listImageHandler);
 
         return result;
+    }
+
+    /**
+     * Lists the latest version of all of the available operating system images.
+     *
+     * @return a collection of the latest version of every image
+     * @throws IOException thrown when there is a problem getting the image list
+     */
+    public Collection<Image> listLatestVersions() throws IOException {
+        try (CloudApiConnectionContext context = getCloudApi().createConnectionContext()) {
+            return listLatestVersions(context, new ImageFilter());
+        }
+    }
+
+    /**
+     * Lists the latest version of all of the available operating system images.
+     *
+     * @param context request context used for sharing resources between API operations
+     * @return a collection of the latest version of every image
+     * @throws IOException thrown when there is a problem getting the image list
+     */
+    public Collection<Image> listLatestVersions(final CloudApiConnectionContext context) throws IOException {
+        return listLatestVersions(context, new ImageFilter());
+    }
+
+    /**
+     * Lists the latest version of all of the available operating system images.
+     *
+     * @param context request context used for sharing resources between API operations
+     * @param filter query filter to filter results by
+     * @return a collection of the latest version of every image
+     * @throws IOException thrown when there is a problem getting the image list
+     */
+    public Collection<Image> listLatestVersions(final CloudApiConnectionContext context,
+                                                final ImageFilter filter) throws IOException {
+        final Collection<Image> all = list(context, filter);
+        final List<Image> sortedHiLow = new ArrayList<>(all);
+        Collections.sort(sortedHiLow, new Image.VersionComparator(false));
+
+        final List<Image> subset = new ArrayList<>(all.size());
+
+        final ListIterator<Image> itr = sortedHiLow.listIterator();
+
+        while (itr.hasNext()) {
+            // We are on the first image
+            if (!itr.hasPrevious()) {
+                subset.add(itr.next());
+                continue;
+            }
+
+            final Image prev = itr.previous();
+            // since we went back one - we will have to go forward two
+            itr.next();
+            final Image next = itr.next();
+
+            // This is a different image from the last one
+            if (!StringUtils.equals(prev.getName(), next.getName())
+                && !StringUtils.equals(prev.getOs(), next.getOs())) {
+                subset.add(next);
+            }
+        }
+
+        return Collections.unmodifiableList(subset);
     }
 
     /**
