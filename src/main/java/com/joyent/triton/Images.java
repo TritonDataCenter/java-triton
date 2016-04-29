@@ -55,11 +55,6 @@ public class Images {
     private final CloudApiConnectionFactory connectionFactory;
 
     /**
-     * Customized Jackson serialization/deserialization object.
-     */
-    private final ObjectMapper mapper;
-
-    /**
      * Query filter converter class that allows you to convert from a {@link PackageFilter}
      * to a {@link java.util.Collection} of {@link NameValuePair}.
      */
@@ -83,7 +78,6 @@ public class Images {
      */
     Images(final CloudApi cloudApi, final ObjectMapper mapper) {
         this.cloudApi = cloudApi;
-        this.mapper = mapper;
         this.config = cloudApi.getConfig();
 
         this.connectionFactory = new CloudApiConnectionFactory(config);

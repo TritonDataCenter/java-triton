@@ -26,11 +26,6 @@ public class CloudApi {
     private final CloudApiConnectionFactory connectionFactory;
 
     /**
-     * Customized Jackson serialization/deserialization object.
-     */
-    private final ObjectMapper mapper = new CloudApiObjectMapper();
-
-    /**
      * Reference to Instances API section.
      */
     private final Instances instances;
@@ -50,6 +45,8 @@ public class CloudApi {
      * @param config SDK configuration object
      */
     public CloudApi(final ConfigContext config) {
+        final ObjectMapper mapper = new CloudApiObjectMapper();
+
         this.config = config;
         this.connectionFactory = new CloudApiConnectionFactory(config);
         this.instances = new Instances(this, mapper);
