@@ -26,11 +26,6 @@ public class CloudApi {
     private final CloudApiConnectionFactory connectionFactory;
 
     /**
-     * Customized Jackson serialization/deserialization object.
-     */
-    private final ObjectMapper mapper = new CloudApiObjectMapper();
-
-    /**
      * Reference to Instances API section.
      */
     private final Instances instances;
@@ -41,14 +36,22 @@ public class CloudApi {
     private final Packages packages;
 
     /**
+     * Reference to the Images API section.
+     */
+    private final Images images;
+
+    /**
      * Creates a new instance based on the passed configuration.
      * @param config SDK configuration object
      */
     public CloudApi(final ConfigContext config) {
+        final ObjectMapper mapper = new CloudApiObjectMapper();
+
         this.config = config;
         this.connectionFactory = new CloudApiConnectionFactory(config);
         this.instances = new Instances(this, mapper);
         this.packages = new Packages(this, mapper);
+        this.images = new Images(this, mapper);
     }
 
     public CloudApiConnectionFactory getConnectionFactory() {
@@ -74,7 +77,6 @@ public class CloudApi {
         return instances;
     }
 
-
     /**
      * Provides access to the Packages API.
      *
@@ -82,6 +84,15 @@ public class CloudApi {
      */
     public Packages packages() {
         return packages;
+    }
+
+    /**
+     * Provides access to the Images API.
+     *
+     * @return a references to a configured {@link Images} object.
+     */
+    public Images images() {
+        return images;
     }
 
     /**

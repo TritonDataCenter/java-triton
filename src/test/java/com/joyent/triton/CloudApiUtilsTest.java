@@ -201,10 +201,10 @@ public class CloudApiUtilsTest {
         assertEquals(csv, expected, "Expected proper conversion to IP address");
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
-    public void csvBarfsOnCommasInInput() {
+    public void csvChangesCommasInInputToSpaces() {
         final Iterable<String> list = ImmutableList.of("hello", "goodbye,", "farewell");
-        CloudApiUtils.csv(list);
+        final String csv = CloudApiUtils.csv(list);
+        assertEquals(csv, "hello, goodbye , farewell");
     }
 
     public void csvCanSerializeStringMap() {

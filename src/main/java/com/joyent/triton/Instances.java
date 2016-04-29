@@ -2,13 +2,10 @@ package com.joyent.triton;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.joyent.triton.config.ConfigContext;
 import com.joyent.triton.domain.Instance;
-import com.joyent.triton.exceptions.CloudApiException;
 import com.joyent.triton.exceptions.CloudApiIOException;
 import com.joyent.triton.exceptions.InstanceGoneMissingException;
 import com.joyent.triton.http.CloudApiConnectionContext;
-import com.joyent.triton.http.CloudApiConnectionFactory;
 import com.joyent.triton.http.CloudApiHttpHeaders;
 import com.joyent.triton.http.CloudApiResponseHandler;
 import com.joyent.triton.http.HttpCollectionResponse;
@@ -49,36 +46,16 @@ import static org.apache.http.HttpStatus.SC_OK;
  * @author <a href="https://github.com/dekobon">Elijah Zupancic</a>
  * @since 1.0.0
  */
-public class Instances {
+public class Instances extends BaseApiAccessor {
     /**
      * Constant indicating that the resource count was unavailable.
      */
     private static final int UNAVAILABLE = -1;
 
     /**
-     * Configuration context that provides SDK settings.
-     */
-    private final ConfigContext config;
-
-    /**
-     * Reference to main API class used for creating connections.
-     */
-    private final CloudApi cloudApi;
-
-    /**
      * Logger instance.
      */
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    /**
-     * {@link org.apache.http.impl.client.CloseableHttpClient} connection factory.
-     */
-    private final CloudApiConnectionFactory connectionFactory;
-
-    /**
-     * Customized Jackson serialization/deserialization object.
-     */
-    private final ObjectMapper mapper;
 
     /**
      * Query filter converter class that allows you to convert from a {@link InstanceFilter}
@@ -123,11 +100,7 @@ public class Instances {
      * @param mapper reference to the jackson object mapper to use for processing JSON
      */
     Instances(final CloudApi cloudApi, final ObjectMapper mapper) {
-        this.mapper = mapper;
-        this.cloudApi = cloudApi;
-        this.config = cloudApi.getConfig();
-
-        this.connectionFactory = new CloudApiConnectionFactory(config);
+        super(cloudApi, mapper);
 
         this.headerInstanceHandler = new CloudApiResponseHandler<>(
                 "get headers", mapper, new TypeReference<Map<String, Header>>() { }, SC_OK, true
@@ -157,7 +130,7 @@ public class Instances {
      * @throws IOException thrown when there is a problem with getting the instance list
      */
     public Iterator<Instance> list() throws IOException {
-        try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
+        try (CloudApiConnectionContext context = getCloudApi().createConnectionContext()) {
             return list(context);
         }
     }
@@ -187,65 +160,48 @@ public class Instances {
         Objects.requireNonNull(context, "Filter object must be present");
 
         final List<NameValuePair> filterParams = instanceFilterConverter.urlParamsFromFilter(filter);
-        final String path = String.format("/%s/machines", config.getUser());
+        final String path = String.format("/%s/machines", getConfig().getUser());
 
         final HttpClient client = context.getHttpClient();
 
-        final HttpHead head = connectionFactory.head(path, filterParams);
+        final HttpHead head = getConnectionFactory().head(path, filterParams);
 
-        try {
-        /* We first perform a head request because we can use it to determine if any results are going
-         * to be returned. If there are no results, we can just return an empty collection and give up. */
-            final Map<String, Header> headHeaders = client.execute(
-                    head, headerInstanceHandler, context.getHttpContext());
-            final int headResourceCount = resourceCount(headHeaders);
+        /* We first perform a head request because we can use it to determine
+         * if any results are going to be returned. If there are no results,
+         * we can just return an empty collection and give up. */
+        final Map<String, Header> headHeaders = execute(
+                context, head, headerInstanceHandler);
+        final int headResourceCount = resourceCount(headHeaders);
 
-            // -1 indicates error, 1+ indicates values present
-            if (headResourceCount == 0) {
-                return Collections.emptyIterator();
-            }
-        } catch (CloudApiIOException | CloudApiException e) {
-            CloudApiUtils.annotateContextedException(e, head);
-            throw e;
-        } catch (IOException e) {
-            final String msg = "Error making request to CloudAPI.";
-            final CloudApiIOException exception = new CloudApiIOException(msg, e);
-            CloudApiUtils.annotateContextedException(exception, head);
-            throw exception;
+        // -1 indicates error, 1+ indicates values present
+        if (headResourceCount == 0) {
+            return Collections.emptyIterator();
         }
 
-        final HttpGet get = connectionFactory.get(path, filterParams);
+        final HttpGet get = getConnectionFactory().get(path, filterParams);
 
-        try {
-            @SuppressWarnings("unchecked")
-            final HttpCollectionResponse<Instance> result =
-                    (HttpCollectionResponse<Instance>) client.execute(
-                            get, listInstanceHandler, context.getHttpContext());
+        @SuppressWarnings("unchecked")
+        final HttpCollectionResponse<Instance> result =
+                (HttpCollectionResponse<Instance>) execute(context,
+                        get, listInstanceHandler);
 
-            final HttpResponse response = result.getResponse();
+        final HttpResponse response = result.getResponse();
 
-            final String resourceCountVal = response.getFirstHeader(CloudApiHttpHeaders.X_RESOURCE_COUNT).getValue();
-            @SuppressWarnings("ConstantConditions")
-            final int resourceCount = Integer.parseInt(firstNonNull(resourceCountVal, "0"));
-            final String queryLimitVal = response.getFirstHeader(CloudApiHttpHeaders.X_QUERY_LIMIT).getValue();
-            @SuppressWarnings("ConstantConditions")
-            final int queryLimit = Integer.parseInt(firstNonNull(queryLimitVal, "1000"));
+        final String resourceCountVal = response.getFirstHeader(
+                CloudApiHttpHeaders.X_RESOURCE_COUNT).getValue();
+        @SuppressWarnings("ConstantConditions")
+        final int resourceCount = Integer.parseInt(firstNonNull(resourceCountVal, "0"));
+        final String queryLimitVal = response.getFirstHeader(
+                CloudApiHttpHeaders.X_QUERY_LIMIT).getValue();
+        @SuppressWarnings("ConstantConditions")
+        final int queryLimit = Integer.parseInt(firstNonNull(queryLimitVal, "1000"));
 
-            if (resourceCount < queryLimit) {
-                logger.info("Total instances: {}", result.size());
-                return result.getWrapped().iterator();
-            }
-
-            return result.iterator();
-        } catch (CloudApiIOException | CloudApiException e) {
-            CloudApiUtils.annotateContextedException(e, get);
-            throw e;
-        } catch (IOException e) {
-            final String msg = "Error making request to CloudAPI.";
-            final CloudApiIOException exception = new CloudApiIOException(msg, e);
-            CloudApiUtils.annotateContextedException(exception, get);
-            throw exception;
+        if (resourceCount < queryLimit) {
+            logger.info("Total instances: {}", result.size());
+            return result.getWrapped().iterator();
         }
+
+        return result.iterator();
     }
 
     /**
@@ -263,29 +219,18 @@ public class Instances {
         Objects.requireNonNull(instance.getPackageId(), "Package id must be present");
         Objects.requireNonNull(instance.getImage(), "Image id must be present");
 
-        final String path = String.format("/%s/machines", config.getUser());
-        final HttpPost post = connectionFactory.post(path);
+        final String path = String.format("/%s/machines", getConfig().getUser());
+        final HttpPost post = getConnectionFactory().post(path);
 
-        try {
-            HttpEntity entity = new JsonEntity(mapper, instance);
-            post.setEntity(entity);
+        HttpEntity entity = new JsonEntity(getMapper(), instance);
+        post.setEntity(entity);
 
-            final HttpClient client = context.getHttpClient();
-            final Instance result = client.execute(post,
-                    createInstanceHandler, context.getHttpContext());
+        final Instance result = execute(context, post,
+                createInstanceHandler);
 
-            logger.info("Created new instance: {}", result.getId());
+        logger.info("Created new instance: {}", result.getId());
 
-            return result;
-        } catch (CloudApiIOException | CloudApiException e) {
-            CloudApiUtils.annotateContextedException(e, post);
-            throw e;
-        } catch (IOException e) {
-            final String msg = "Error making request to CloudAPI.";
-            final CloudApiIOException exception = new CloudApiIOException(msg, e);
-            CloudApiUtils.annotateContextedException(exception, post);
-            throw exception;
-        }
+        return result;
     }
 
     /**
@@ -306,7 +251,7 @@ public class Instances {
      * @throws IOException thrown when there is a problem deleting instance
      */
     public void delete(final UUID instanceId) throws IOException {
-        try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
+        try (CloudApiConnectionContext context = getCloudApi().createConnectionContext()) {
             delete(context, instanceId);
         }
     }
@@ -337,23 +282,12 @@ public class Instances {
         Objects.requireNonNull(instanceId, "Instance id to be deleted must be present");
 
         final String path = String.format("/%s/machines/%s",
-                config.getUser(), instanceId);
-        final HttpDelete delete = connectionFactory.delete(path);
+                getConfig().getUser(), instanceId);
+        final HttpDelete delete = getConnectionFactory().delete(path);
 
-        try {
-            final HttpClient client = context.getHttpClient();
-            client.execute(delete, deleteInstanceHandler, context.getHttpContext());
+        execute(context, delete, deleteInstanceHandler);
 
-            logger.info("Deleted instance: {}", instanceId);
-        } catch (CloudApiIOException | CloudApiException e) {
-            CloudApiUtils.annotateContextedException(e, delete);
-            throw e;
-        } catch (IOException e) {
-            final String msg = "Error making request to CloudAPI.";
-            final CloudApiIOException exception = new CloudApiIOException(msg, e);
-            CloudApiUtils.annotateContextedException(exception, delete);
-            throw exception;
-        }
+        logger.info("Deleted instance: {}", instanceId);
     }
 
     /**
@@ -398,7 +332,7 @@ public class Instances {
                                        final String initialState,
                                        final long maxWaitTimeMs,
                                        final long waitIntervalMs) throws IOException {
-        try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
+        try (CloudApiConnectionContext context = getCloudApi().createConnectionContext()) {
             return waitForStateChange(context, instanceId, initialState, maxWaitTimeMs, waitIntervalMs);
         }
     }
@@ -524,7 +458,7 @@ public class Instances {
      * @throws IOException thrown when we have a problem finding an instance by id
      */
     public Instance findById(final UUID instanceId) throws IOException {
-        try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
+        try (CloudApiConnectionContext context = getCloudApi().createConnectionContext()) {
             return findById(context, instanceId);
         }
     }
@@ -539,22 +473,11 @@ public class Instances {
      */
     public Instance findById(final CloudApiConnectionContext context,
                              final UUID instanceId) throws IOException {
-        final HttpClient client = context.getHttpClient();
         final String path = String.format("/%s/machines/%s",
-                config.getUser(), instanceId);
-        final HttpGet get = connectionFactory.get(path);
+                getConfig().getUser(), instanceId);
+        final HttpGet get = getConnectionFactory().get(path);
 
-        try {
-            return client.execute(get, findInstanceHandler, context.getHttpContext());
-        } catch (CloudApiIOException | CloudApiException e) {
-            CloudApiUtils.annotateContextedException(e, get);
-            throw e;
-        } catch (IOException e) {
-            final String msg = "Error making request to CloudAPI.";
-            final CloudApiIOException exception = new CloudApiIOException(msg, e);
-            CloudApiUtils.annotateContextedException(exception, get);
-            throw exception;
-        }
+        return execute(context, get, findInstanceHandler);
     }
 
     /**
@@ -567,7 +490,7 @@ public class Instances {
      */
     public Map<String, String> addTags(final UUID instanceId,
                                        final Map<String, String> tags) throws IOException {
-        try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
+        try (CloudApiConnectionContext context = getCloudApi().createConnectionContext()) {
             return addTags(context, instanceId, tags);
         }
     }
@@ -592,31 +515,18 @@ public class Instances {
             return Collections.emptyMap();
         }
 
-        final String path = String.format("/%s/machines/%s/tags", config.getUser(), instanceId);
-        final HttpPost post = connectionFactory.post(path);
+        final String path = String.format("/%s/machines/%s/tags", getConfig().getUser(), instanceId);
+        final HttpPost post = getConnectionFactory().post(path);
+        final HttpEntity entity = new JsonEntity(getMapper(), tags);
+        post.setEntity(entity);
 
-        try {
-            final HttpEntity entity = new JsonEntity(mapper, tags);
-            post.setEntity(entity);
+        final Map<String, String> result = execute(context, post, tagsHandler);
 
-            final HttpClient client = context.getHttpClient();
-            final Map<String, String> result = client.execute(post,
-                    tagsHandler, context.getHttpContext());
-
-            if (logger.isInfoEnabled()) {
-                logger.info("Add/updated [%d] tags to instance [{}]", result.size());
-            }
-
-            return result;
-        } catch (CloudApiIOException | CloudApiException e) {
-            CloudApiUtils.annotateContextedException(e, post);
-            throw e;
-        } catch (IOException e) {
-            final String msg = "Error making request to CloudAPI.";
-            final CloudApiIOException exception = new CloudApiIOException(msg, e);
-            CloudApiUtils.annotateContextedException(exception, post);
-            throw exception;
+        if (logger.isInfoEnabled()) {
+            logger.info("Add/updated [%d] tags to instance [{}]", result.size());
         }
+
+        return result;
     }
 
     /**
@@ -629,7 +539,7 @@ public class Instances {
      */
     public Map<String, String> replaceTags(final UUID instanceId,
                                            final Map<String, String> tags) throws IOException {
-        try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
+        try (CloudApiConnectionContext context = getCloudApi().createConnectionContext()) {
             return replaceTags(context, instanceId, tags);
         }
     }
@@ -650,31 +560,20 @@ public class Instances {
         Objects.requireNonNull(instanceId, "Instance id must be present");
         Objects.requireNonNull(tags, "Tags to replace must be present");
 
-        final String path = String.format("/%s/machines/%s/tags", config.getUser(), instanceId);
-        final HttpPut put = connectionFactory.put(path);
+        final String path = String.format("/%s/machines/%s/tags", getConfig().getUser(), instanceId);
+        final HttpPut put = getConnectionFactory().put(path);
 
-        try {
-            final HttpEntity entity = new JsonEntity(mapper, tags);
-            put.setEntity(entity);
+        final HttpEntity entity = new JsonEntity(getMapper(), tags);
+        put.setEntity(entity);
 
-            final HttpClient client = context.getHttpClient();
-            final Map<String, String> result = client.execute(put,
-                    tagsHandler, context.getHttpContext());
+        final Map<String, String> result = execute(context, put,
+                tagsHandler);
 
-            if (logger.isInfoEnabled()) {
-                logger.info("Replaced all tags on instance [{}] with [%d] tags", result.size());
-            }
-
-            return result;
-        } catch (CloudApiIOException | CloudApiException e) {
-            CloudApiUtils.annotateContextedException(e, put);
-            throw e;
-        } catch (IOException e) {
-            final String msg = "Error making request to CloudAPI.";
-            final CloudApiIOException exception = new CloudApiIOException(msg, e);
-            CloudApiUtils.annotateContextedException(exception, put);
-            throw exception;
+        if (logger.isInfoEnabled()) {
+            logger.info("Replaced all tags on instance [{}] with [%d] tags", result.size());
         }
+
+        return result;
     }
 
     /**
