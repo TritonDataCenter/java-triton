@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static org.apache.http.HttpStatus.SC_OK;
 
@@ -110,5 +111,39 @@ public class Images extends BaseApiAccessor {
                 (HttpCollectionResponse<Image>) execute(context, get, listImageHandler);
 
         return result;
+    }
+
+    /**
+     * Get a image by specifying its id.
+     *
+     * @param imageId UUID of the image
+     * @return image matching id if found, otherwise null
+     * @throws IOException thrown when there is a problem getting the image information
+     */
+    public Image findById(final UUID imageId) throws IOException {
+        try (CloudApiConnectionContext context = getCloudApi().createConnectionContext()) {
+            return findById(context, imageId);
+        }
+    }
+
+    /**
+     * Get a image by specifying its id.
+     *
+     * @param context request context used for sharing resources between API operations
+     * @param imageId UUID of the image
+     * @return image matching id if found, otherwise null
+     * @throws IOException thrown when there is a problem getting the image information
+     */
+    public Image findById(final CloudApiConnectionContext context,
+                            final UUID imageId) throws IOException  {
+        Objects.requireNonNull(context, "Context must be present");
+        Objects.requireNonNull(imageId, "Image id must be present");
+
+        final String path = String.format("/%s/images/%s",
+                getConfig().getUser(), imageId);
+
+        final HttpGet get = getConnectionFactory().get(path);
+
+        return execute(context, get, findByIdImageHandler);
     }
 }

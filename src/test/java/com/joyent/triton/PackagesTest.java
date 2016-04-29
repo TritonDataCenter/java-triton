@@ -6,7 +6,12 @@ import com.joyent.triton.config.DefaultsConfigContext;
 import com.joyent.triton.config.StandardConfigContext;
 import com.joyent.triton.domain.Package;
 import com.joyent.triton.http.CloudApiConnectionContext;
-import org.apache.http.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.HttpVersion;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHttpResponse;
@@ -17,9 +22,14 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.UUID;
 
 import static com.joyent.triton.FakeHttpClient.createMockContext;
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 @Test(groups = "unit")
 public class PackagesTest {
@@ -63,6 +73,30 @@ public class PackagesTest {
             Collection<Package> packages = packagesApi.list(context);
             assertFalse(packages.isEmpty(), "This should not be an empty collection");
             assertEquals(packages.size(), 70, "Expected 70 package types");
+        }
+    }
+
+    public void canGetPackageById() throws IOException {
+        final StatusLine statusLine = new BasicStatusLine(HTTP_1_1, HttpStatus.SC_OK, "OK");
+        final HttpResponse response = new BasicHttpResponse(statusLine);
+        final File file = new File("src/test/data/domain/package.json");
+        final HttpEntity entity = new FileEntity(file);
+        response.setEntity(entity);
+
+        try (CloudApiConnectionContext context = createMockContext(response)) {
+            Package pkg = packagesApi.findById(context, new UUID(1, 1));
+            assertNotNull(pkg);
+        }
+    }
+
+    public void canHandleNotFindingPackageById() throws IOException {
+        final StatusLine statusLine = new BasicStatusLine(HTTP_1_1,
+                HttpStatus.SC_NOT_FOUND, "Not Found");
+        final HttpResponse response = new BasicHttpResponse(statusLine);
+
+        try (CloudApiConnectionContext context = createMockContext(response)) {
+            Package pkg = packagesApi.findById(context, new UUID(1, 1));
+            assertNull(pkg);
         }
     }
 

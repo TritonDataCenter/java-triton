@@ -55,7 +55,7 @@ All API calls that have been implemented in the SDK have been crossed out.
 
 ### Images
 * ~~ListImages~~
-* GetImage
+* ~~GetImage~~
 * DeleteImage
 * ExportImage
 * CreateImageFromMachine

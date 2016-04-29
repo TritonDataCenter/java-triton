@@ -12,14 +12,20 @@ import org.slf4j.LoggerFactory;
 import org.testng.SkipException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.testng.collections.Lists;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 
 @Test(groups = { "integration" })
 public class ImagesIT {
@@ -70,6 +76,30 @@ public class ImagesIT {
                 assertEquals(pkg.getOs(), expectedOs,
                         "OS didn't match filter. Images:\n" + images);
             }
+        }
+    }
+
+    public void verifyNonexistentImageReturnsAsNull() throws IOException {
+        try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
+            final UUID badImageId = new UUID(-1L, -1L);
+            final Image result = imagesApi.findById(context, badImageId);
+            assertNull(result, "When a image isn't found, it should be null");
+        }
+    }
+
+    @Test(dependsOnMethods = "canListImages")
+    public void canFindImageById() throws IOException {
+        try (CloudApiConnectionContext context = cloudApi.createConnectionContext()) {
+            final List<Image> images = Lists.newArrayList(imagesApi.list(context));
+
+            assertFalse(images.isEmpty(), "There must be at least a single image");
+
+            Collections.shuffle(images);
+
+            final UUID imageId = images.iterator().next().getId();
+            final Image pkg = imagesApi.findById(imageId);
+            assertNotNull(pkg, "There must be a image returned");
+            assertEquals(pkg.getId(), imageId, "Image ids must match");
         }
     }
 }
