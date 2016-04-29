@@ -92,7 +92,7 @@ All API calls that have been implemented in the SDK have been crossed out.
 * GetMachineTag
 * DeleteMachineTag
 * DeleteMachineTags
-* DeleteMachine
+* ~~DeleteMachine~~
 * MachineAudit
 
 ### Analytics
