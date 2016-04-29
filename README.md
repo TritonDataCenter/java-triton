@@ -2,17 +2,19 @@
 
 # Triton Java SDK
 
-[java-triton](https://github.com/joyent/java-triton) is a community-maintained Java
-SDK for interacting with Joyent's Triton cloud provisioning interface - 
+[java-triton](https://github.com/joyent/java-triton) is a community-maintained 
+Java SDK for interacting with Joyent's Triton cloud provisioning interface - 
 [CloudAPI](https://apidocs.joyent.com/cloudapi/).
 
 This project is under active development. We are targeting our first release to
-be 1.0.0 and all versions under 1.0.0 are considered beta builds.
+be 1.0.0 and all versions under 1.0.0 are considered beta builds. If you need
+functionality that is not provided, please file a github issue and it will be
+prioritized.
 
 ## Installation
 
 ### Requirements
-* [Java 1.7](http://www.oracle.com/technetwork/java/javase/downloads/index.html) or higher.
+* [Java 1.7](http://openjdk.java.net/install/) or higher.
 * [Maven 3.3.x](https://maven.apache.org/)
 
 ### Using Maven
@@ -39,7 +41,25 @@ code.
 For the current status of what is implemented from the CloudAPI, refer to the
 [ROADMAP.md](ROADMAP.md) document.
 
-## Configuration 
+## Configuration
+ 
+The entry point to the SDK is via the class ```com.joyent.triton.CloudApi```.
+This class takes an instance of ```com.joyent.triton.config.ConfigContext``` as 
+a single parameter to its constructor. Any implementation of the 
+```ConfigContext``` interface will allow you to configure the SDK's parameters.
+For ease of use, we provide a number of different chainable configuration classes.
+
+| Class                       | Description                                                             |
+|-----------------------------|-------------------------------------------------------|
+| ChainedConfigContext        | allows you to chain together multiple config contexts |
+| DefaultsConfigContext       | default values for settings                           |
+| EnvVarConfigContext         | configuration from environment variables              |
+| MapConfigContext            | configuration from a Map instance                     |
+| StandardConfigContext       | configuration via a fluent interface                  |
+| SystemSettingsConfigContext | configuration from Java system properties             |
+
+
+### Defaults, Environment Variables and System Properties 
 
 Configuration parameters take precedence from left to right - values on the
 left are overridden by values on the right.
@@ -64,6 +84,20 @@ left are overridden by values on the right.
 
 The SDK utilizes [slf4j](http://www.slf4j.org/), and logging
 can be configured using a SLF4J implementation.
+
+## Usage
+
+You'll need a Triton login, an associated cryptographic key, and its corresponding key
+fingerprint. Note that this SDK currently only supports rsa ssh keys --
+enterprising individuals wishing to use other keys can contribute to this repo by
+consulting the [node-http-signing spec](https://github.com/joyent/node-http-signature/blob/master/http_signing.md).
+
+For detailed usage instructions, consult the provided javadoc.
+
+## Examples
+
+ * [List instances example](src/examples/java/org/example/ListInstances.java)
+
 
 ## Contributions
 
