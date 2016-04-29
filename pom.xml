@@ -4,7 +4,7 @@
 
     <groupId>com.joyent.triton</groupId>
     <artifactId>java-triton-client</artifactId>
-    <version>0.0.4-b2</version>
+    <version>0.0.4-SNAPSHOT</version>
 
     <name>java-triton</name>
     <description>Java Triton CloudAPI SDK</description>
@@ -30,7 +30,7 @@
         <connection>scm:git:git://github.com/joyent/java-triton.git</connection>
         <developerConnection>scm:git:git://github.com/joyent/java-triton.git</developerConnection>
         <url>git@github.com:joyent/java-triton.git</url>
-        <tag>java-triton-client-0.0.4-b2</tag>
+        <tag>HEAD</tag>
     </scm>
     <issueManagement>
         <system>github.com</system>
